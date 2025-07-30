@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useParams } from "next/navigation";
 import axios from "axios";
 import { useDropzone } from "react-dropzone";
 
-export default function AddCategory() {
+export default function EditCategory() {
+  const { id } = useParams();
   const [name, setName] = useState("");
-  
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -14,25 +15,48 @@ export default function AddCategory() {
   const [attributes, setAttributes] = useState([{ name: "", values: "" }]);
   const [loading, setLoading] = useState(false);
   const [parentId, setParentId] = useState("");
-  const [categories, setCategories] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
 
+  // Fetch data for the specific category
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchCategory = async () => {
       try {
         const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_SERVER}/admin/category`,{
-            withCredentials:true
-          }
+          `${process.env.NEXT_PUBLIC_SERVER}/admin/category/${id}`,
+          { withCredentials: true }
         );
-        setCategories(res.data.data.data);
-        
-        
+        const cat = res.data.data.data;
+
+        setName(cat.name || "");
+        setDescription(cat.description || "");
+        setIsFeatured(cat.isFeatured || false);
+        setParentId(cat.parentId || "");
+        setAttributes(cat.attributes || [{ name: "", values: [] }]);
+        setImagePreview(cat.image || "");
       } catch (err) {
-        console.error("Failed to load categories");
+        console.error("Failed to load category", err);
       }
     };
-    fetchCategories();
-  }, []);
+
+    const fetchAllCategories = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_SERVER}/admin/category`,
+          { withCredentials: true }
+        );
+        setAllCategories(res.data.data.data || []);
+        console.log(res.data.data.data);
+        
+      } catch (err) {
+        console.error("Failed to fetch all categories");
+      }
+    };
+
+    if (id) {
+      fetchCategory();
+      fetchAllCategories();
+    }
+  }, [id]);
 
   const handleAttributeChange = (index, field, value) => {
     const updated = [...attributes];
@@ -67,52 +91,35 @@ export default function AddCategory() {
     setLoading(true);
 
     const formData = new FormData();
-
     formData.append("name", name);
-    
     formData.append("description", description);
     formData.append("isFeatured", isFeatured);
     if (parentId) formData.append("parentId", parentId);
-
-    if (imageFile) {
-      formData.append("categoryImage", imageFile); // Must match backend field name
-    }
+    if (imageFile) formData.append("categoryImage", imageFile);
 
     const formattedAttributes = attributes.map((attr) => ({
       name: attr.name.trim(),
-      values: attr.values
-        .split(",")
-        .map((v) => v.trim())
-        .filter((v) => v !== ""),
+      values: Array.isArray(attr.values)
+        ? attr.values
+        : attr.values.split(",").map((v) => v.trim()),
     }));
 
     formData.append("attributes", JSON.stringify(formattedAttributes));
 
     try {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER}/admin/add-category`,
+      await axios.patch(
+        `${process.env.NEXT_PUBLIC_SERVER}/admin/edit-category/${id}`,
         formData,
         {
-          withCredentials:true,
-        
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
         }
       );
 
-      alert("✅ Category Saved");
-      setName("");
-      
-      setDescription("");
-      setImageFile(null);
-      setImagePreview("");
-      setIsFeatured(false);
-      setParentId("");
-      setAttributes([{ name: "", values: "" }]);
+      alert("✅ Category updated!");
     } catch (err) {
       console.error(err);
-      alert("❌ Failed to save category");
+      alert("❌ Failed to update category");
     } finally {
       setLoading(false);
     }
@@ -120,32 +127,30 @@ export default function AddCategory() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10">
-      <h1 className="text-3xl font-bold mb-10">Create Category</h1>
+      <h1 className="text-3xl font-bold mb-10">Edit Category</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Name */}
         <div>
-          <label className="block text-sm mb-1 font-medium">Name</label>
+          <label className="block mb-1">Name</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Electronics"
-            className="w-full border rounded-lg px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-400"
+            className="w-full border px-4 py-2 rounded"
+            placeholder="Category Name"
           />
         </div>
 
         {/* Parent Category */}
         <div>
-          <label className="block text-sm mb-1 font-medium">
-            Parent Category
-          </label>
+          <label className="block mb-1">Parent Category</label>
           <select
             value={parentId}
             onChange={(e) => setParentId(e.target.value)}
-            className="w-full border rounded-lg px-4 py-2 text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400"
+            className="w-full border px-4 py-2 rounded bg-white"
           >
-            <option value="">Select Parent Category</option>
-            {categories?.map((cat) => (
+            <option value="">None</option>
+            {allCategories.map((cat) => (
               <option key={cat._id} value={cat._id}>
                 {cat.name}
               </option>
@@ -155,77 +160,74 @@ export default function AddCategory() {
 
         {/* Description */}
         <div>
-          <label className="block text-sm mb-1 font-medium">Description</label>
+          <label className="block mb-1">Description</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="e.g. All electronic products"
-            className="w-full border rounded-lg px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-400"
-            rows={3}
+            className="w-full border px-4 py-2 rounded"
           />
         </div>
 
-        {/* Drag & Drop Image */}
+        {/* Image */}
         <div>
-          <label className="block text-sm mb-1 font-medium">Upload Image</label>
+          <label className="block mb-1">Category Image</label>
           <div
             {...getRootProps()}
-            className={`w-full p-6 border-2 border-dashed rounded-md cursor-pointer text-center ${
-              isDragActive ? "border-teal-400 bg-teal-50" : "border-gray-300"
-            }`}
+            className="border-2 border-dashed p-4 text-center rounded cursor-pointer"
           >
             <input {...getInputProps()} />
             {imagePreview ? (
               <img
                 src={imagePreview}
-                alt="Uploaded"
+                alt="Preview"
                 className="mx-auto h-32 object-contain"
               />
             ) : (
-              <p className="text-gray-500">Drag & drop or click to upload</p>
+              <p className="text-gray-500">Drag or click to upload</p>
             )}
           </div>
         </div>
 
-        {/* Is Featured */}
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Is Featured</label>
+        {/* Featured Toggle */}
+        <div className="flex items-center">
+          <label className="mr-2">Featured</label>
           <input
             type="checkbox"
             checked={isFeatured}
             onChange={(e) => setIsFeatured(e.target.checked)}
-            className="w-5 h-5 accent-teal-500"
           />
         </div>
 
         {/* Attributes */}
         <div>
-          <h3 className="font-semibold text-lg mb-2">Attributes (Optional)</h3>
-          {attributes.map((attr, i) => (
-            <div key={i} className="flex flex-col md:flex-row gap-3 mb-2">
+          <label className="block font-semibold mb-2">Attributes</label>
+          {attributes.map((attr, idx) => (
+            <div key={idx} className="flex gap-2 mb-2">
               <input
-                type="text"
-                placeholder="e.g. Color"
                 value={attr.name}
                 onChange={(e) =>
-                  handleAttributeChange(i, "name", e.target.value)
+                  handleAttributeChange(idx, "name", e.target.value)
                 }
-                className="flex-1 border rounded-lg px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                placeholder="e.g. Size"
+                className="flex-1 border px-3 py-1 rounded"
               />
               <input
-                type="text"
-                placeholder="e.g. red, blue"
-                value={attr.values}
-                onChange={(e) =>
-                  handleAttributeChange(i, "values", e.target.value)
+                value={
+                  Array.isArray(attr.values)
+                    ? attr.values.join(", ")
+                    : attr.values
                 }
-                className="flex-1 border rounded-lg px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                onChange={(e) =>
+                  handleAttributeChange(idx, "values", e.target.value)
+                }
+                placeholder="e.g. S, M, L"
+                className="flex-1 border px-3 py-1 rounded"
               />
               {attributes.length > 1 && (
                 <button
                   type="button"
-                  onClick={() => removeAttributeField(i)}
-                  className="text-red-500 text-xl"
+                  className="text-red-500"
+                  onClick={() => removeAttributeField(idx)}
                 >
                   ✕
                 </button>
@@ -235,20 +237,19 @@ export default function AddCategory() {
           <button
             type="button"
             onClick={addAttributeField}
-            className="text-sm text-teal-600 hover:underline mt-2"
+            className="text-sm text-blue-500 hover:underline"
           >
-            + Add Another Attribute
+            + Add Attribute
           </button>
         </div>
 
-        {/* Submit */}
         <div className="text-right">
           <button
             type="submit"
-            className="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-full shadow-sm"
             disabled={loading}
+            className="bg-blue-600 text-white px-6 py-2 rounded shadow"
           >
-            {loading ? "Saving..." : "Create Category"}
+            {loading ? "Updating..." : "Update Category"}
           </button>
         </div>
       </form>

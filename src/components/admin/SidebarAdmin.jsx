@@ -2,6 +2,10 @@
 import React, { useState } from "react";
 import { BiCategory } from "react-icons/bi";
 import { IoBagAddOutline } from "react-icons/io5";
+import { IoLocationOutline } from "react-icons/io5";
+import { MdOutlineReviews } from "react-icons/md";
+import { FaRegUser } from "react-icons/fa";
+import { RiCoupon2Line } from "react-icons/ri";
 import { Sidebar, SidebarBody, SidebarLink } from "../ui/sidebar";
 import {
   IconArrowLeft,
@@ -17,44 +21,46 @@ export function SidebarAdmin({ children }) {
     {
       label: "Dashboard",
       href: "/admin",
-      icon: (
-        <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 " />
-      ),
+      icon: <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 " />,
     },
-    {
-      label: "Profile",
-      href: "/admin/profile",
-      icon: (
-        <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-700 " />
-      ),
-    },
+
     {
       label: "Category",
       href: "/admin/category",
-      icon: (
-        <BiCategory className="h-5 w-5 shrink-0 text-neutral-700 " />
-      ),
+      icon: <BiCategory className="h-5 w-5 shrink-0 text-neutral-700 " />,
     },
     {
       label: "Product",
       href: "/admin/product",
+      icon: <IoBagAddOutline className="h-5 w-5 shrink-0 text-neutral-700 " />,
+    },
+    {
+      label: "Order",
+      href: "/admin/order",
       icon: (
-        <IoBagAddOutline className="h-5 w-5 shrink-0 text-neutral-700 " />
+        <IoLocationOutline className="h-5 w-5 shrink-0 text-neutral-700 " />
       ),
     },
     {
-      label: "Settings",
-      href: "/admin/settings",
-      icon: (
-        <IconSettings className="h-5 w-5 shrink-0 text-neutral-700 " />
-      ),
+      label: "Coupon",
+      href: "/admin/coupon",
+      icon: <RiCoupon2Line className="h-5 w-5 shrink-0 text-neutral-700 " />,
     },
+    {
+      label: "Customer",
+      href: "/admin/customers",
+      icon: <FaRegUser className="h-5 w-5 shrink-0 text-neutral-700 " />,
+    },
+    {
+      label: "Reviews",
+      href: "/admin/reviews",
+      icon: <MdOutlineReviews className="h-5 w-5 shrink-0 text-neutral-700 " />,
+    },
+
     {
       label: "Logout",
       href: "/logout",
-      icon: (
-        <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700 " />
-      ),
+      icon: <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700 " />,
     },
   ];
 

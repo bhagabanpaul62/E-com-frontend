@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
+import { cn } from "@/lib/utils"; // Optional className utility
 
 export default function AdminProductList() {
   const [products, setProducts] = useState([]);
+  const [filter, setFilter] = useState("All");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     axios
@@ -14,95 +17,106 @@ export default function AdminProductList() {
       .catch((err) => console.error("Error fetching products", err));
   }, []);
 
+  const filteredProducts = products.filter((p) => {
+    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
+    const matchStatus =
+      filter === "All" || p.status.toLowerCase() === filter.toLowerCase();
+    return matchSearch && matchStatus;
+  });
+
   return (
-    <div className="p-6 text-white max-w-7xl mx-auto">
+    <div className="p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Manage Products</h1>
+        <h1 className="text-2xl font-bold">Products</h1>
         <Link
           href="/admin/product/addproduct"
-          className="bg-amber-400 text-black font-semibold px-4 py-2 rounded hover:bg-amber-300 transition"
+          className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200"
         >
-          ➕ Add Product
+          Add product
         </Link>
       </div>
 
-      {products.length === 0 ? (
-        <p>No products found.</p>
-      ) : (
-        <div className="space-y-6">
-          {products.map((product) => (
-            <div
-              key={product._id}
-              className="bg-neutral-800 p-4 rounded-lg shadow"
+      {/* Search + Filter Tabs */}
+      <div className="bg-gray-50 p-4 rounded-lg mb-6">
+        <input
+          type="text"
+          placeholder="Search products"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full px-4 py-2 mb-4 rounded border border-gray-300 focus:outline-none"
+        />
+        <div className="flex gap-4 text-sm font-medium text-gray-600">
+          {["All", "Active", "Inactive"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setFilter(tab)}
+              className={cn(
+                "py-1 border-b-2 transition-all",
+                filter === tab
+                  ? "border-black text-black"
+                  : "border-transparent hover:text-black"
+              )}
             >
-              <div className="flex justify-between items-center mb-2">
-                <h2 className="text-xl font-semibold">{product.name}</h2>
-                <span className="text-sm text-gray-400">
-                  {product.status.toUpperCase()}
-                </span>
-              </div>
-              <p className="text-gray-300 mb-2">{product.description}</p>
-
-              <div className="flex gap-4 mb-2">
-                {product.images?.slice(0, 3).map((img, i) => (
-                  <img
-                    key={i}
-                    src={img}
-                    alt=""
-                    className="w-16 h-16 rounded border"
-                  />
-                ))}
-              </div>
-
-              <div className="text-sm text-gray-400 mb-2">
-                Category: {product?.categoryId?.name || "N/A"} | Tags:{" "}
-                {product.tags?.join(", ")}
-              </div>
-
-              <div className="text-sm mb-2">
-                Base Price: ₹{product.price} | Discount: ₹{product.discount} |
-                Final: ₹{product.finalPrice}
-              </div>
-
-              <div className="text-sm mb-2">
-                Total Stock: {product.totalStock}
-              </div>
-
-              <div className="text-sm font-medium mb-2">Variants:</div>
-              <div className="grid gap-2 grid-cols-1 md:grid-cols-2">
-                {product.variants.map((v, i) => (
-                  <div
-                    key={i}
-                    className="border border-gray-700 p-2 rounded bg-neutral-900"
-                  >
-                    <p>SKU: {v.sku}</p>
-                    <p>Price: ₹{v.price}</p>
-                    <p>Stock: {v.stock}</p>
-                    <p>Attributes:</p>
-                    <ul className="list-disc ml-4 text-gray-300">
-                      {Object.entries(v.attributes).map(([key, val]) => (
-                        <li key={key}>
-                          {key}: {val}
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="flex gap-1 mt-2">
-                      {v.images?.map((img, j) => (
-                        <img
-                          key={j}
-                          src={img}
-                          alt=""
-                          className="w-12 h-12 object-cover rounded"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+              {tab}
+            </button>
           ))}
         </div>
-      )}
+      </div>
+
+      {/* Product Table */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border rounded-lg">
+          <thead>
+            <tr className="text-left bg-gray-50 border-b">
+              <th className="px-6 py-3 text-sm font-semibold">Product</th>
+              <th className="px-6 py-3 text-sm font-semibold">Status</th>
+              <th className="px-6 py-3 text-sm font-semibold">Inventory</th>
+              <th className="px-6 py-3 text-sm font-semibold">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredProducts.map((product) => {
+              const inStock =
+                product.totalStock && product.totalStock > 0
+                  ? `${product.totalStock} in stock`
+                  : "Out of stock";
+
+              return (
+                <tr
+                  key={product._id}
+                  className="border-b hover:bg-gray-50 transition"
+                >
+                  <td className="px-6 py-4">{product.name}</td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={cn(
+                        "inline-block px-3 py-1 text-sm rounded-full",
+                        product.status === "Active"
+                          ? "bg-gray-100 text-black"
+                          : "bg-gray-200 text-gray-500"
+                      )}
+                    >
+                      {product.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sky-600">{inStock}</td>
+                  <td className="px-6 py-4">${product.finalPrice}</td>
+                </tr>
+              );
+            })}
+            {filteredProducts.length === 0 && (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="text-center text-gray-400 px-6 py-10"
+                >
+                  No matching products found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

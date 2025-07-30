@@ -1,18 +1,18 @@
+// /lib/auth.js
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
 export async function getAuthStatus() {
-    const cookiesStore = cookies();
-    const token = cookiesStore.get('accessToken')?.value;
+  const cookieStore = await cookies(); // ✅ await required
+  const token = cookieStore.get("accessToken")?.value;
 
-    if(!token){
-        return null;
-    }
-    try{
-        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-        return decoded; 
+  if (!token) return null;
 
-    }catch{
-        return null
-    }
+  try {
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    return decoded; // e.g., { _id, email, role }
+  } catch (err) {
+    console.error("Invalid token:", err);
+    return null;
+  }
 }

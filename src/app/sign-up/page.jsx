@@ -4,45 +4,54 @@ import { useRef, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
-
 const SignUp = () => {
   const router = useRouter();
   const emailRef = useRef("");
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    
-    const email = emailRef.current.value;
-    if (!email) return alert("Please enter your email or phone.");
+    setErrorMsg("");
+
+    const email = emailRef.current.value?.trim();
+    if (!email) {
+      setErrorMsg("Please enter your email or phone.");
+      return;
+    }
 
     try {
       setLoading(true);
+
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER}/users/send-otp`,
-        {
-          email,
-        }
+        { email }
       );
-      
-      
+
       router.push(`/sign-up/verify?email=${encodeURIComponent(email)}`);
-      setLoading(false);
-      // Optionally redirect or go to next step
     } catch (err) {
-      alert(err?.response?.data?.message || "Something went wrong");
+      setErrorMsg(err?.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="w-full h-screen flex justify-center items-center bg-gray-50">
+    <div className="w-full min-h-screen flex justify-center items-center bg-gray-50 px-4">
       <form
         onSubmit={submitHandler}
-        className="bg-white shadow-md rounded-lg p-8 w-full max-w-sm space-y-6"
+        className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-sm space-y-6 border"
       >
-        <h2 className="text-2xl font-semibold text-gray-800 text-center">
-          Create Your Account
+        <h2 className="text-3xl font-bold text-center text-gray-800">
+          Create Account
         </h2>
+
+        {/* Error Message */}
+        {errorMsg && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm">
+            {errorMsg}
+          </div>
+        )}
 
         {/* Email Field */}
         <div className="flex flex-col space-y-1">
@@ -50,13 +59,11 @@ const SignUp = () => {
             Email or Phone
           </label>
           <input
-            type="email"
+            type="text"
             id="email"
             name="email"
-           
-            placeholder="Enter your email or Phone"
-            className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400"
-            required
+            placeholder="Enter your email or phone"
+            className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
             ref={emailRef}
           />
         </div>
@@ -64,16 +71,16 @@ const SignUp = () => {
         {/* Submit Button */}
         <button
           type="submit"
-          className={`w-full text-white font-semibold py-2 rounded-md transition duration-200 flex justify-center 
-          ${
-            loading
-              ? "bg-amber-500 cursor-not-allowed"
-              : "bg-amber-400 hover:bg-amber-500"
-          }
-        `}
+          disabled={loading}
+          className={`w-full font-semibold py-2 rounded-md text-white transition duration-200 flex justify-center items-center
+            ${
+              loading
+                ? "bg-amber-500 cursor-not-allowed"
+                : "bg-amber-400 hover:bg-amber-500"
+            }`}
         >
           {loading ? (
-            <AiOutlineLoading className=" animate-spin text-2xl text-white font-bold te " />
+            <AiOutlineLoading className="animate-spin text-2xl" />
           ) : (
             <span>Send OTP</span>
           )}
