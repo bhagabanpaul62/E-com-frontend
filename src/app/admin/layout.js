@@ -12,7 +12,7 @@ export default async function RootLayout({ children }) {
   const user = getAuthStatus();
   console.log("our is", user);
   
-  if (!user || !user.isAdmin) {
+  if (!user || !user.isAdmin || user.status !== 'Active') {
 
     return (
       <html>
