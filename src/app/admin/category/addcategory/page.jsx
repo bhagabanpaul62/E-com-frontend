@@ -6,7 +6,7 @@ import { useDropzone } from "react-dropzone";
 
 export default function AddCategory() {
   const [name, setName] = useState("");
-  
+  const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -20,7 +20,7 @@ export default function AddCategory() {
     const fetchCategories = async () => {
       try {
         const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_SERVER}/admin/category`,{
+          `${process.env.NEXT_PUBLIC_SERVER.replace('/api', '')}/api/admin/category`,{
             withCredentials:true
           }
         );
@@ -90,7 +90,7 @@ export default function AddCategory() {
 
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER}/admin/add-category`,
+        `${process.env.NEXT_PUBLIC_SERVER.replace('/api', '')}/api/admin/add-category`,
         formData,
         {
           withCredentials:true,
@@ -103,7 +103,7 @@ export default function AddCategory() {
 
       alert("✅ Category Saved");
       setName("");
-      
+      setSlug("");
       setDescription("");
       setImageFile(null);
       setImagePreview("");
@@ -128,10 +128,27 @@ export default function AddCategory() {
           <input
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              const newName = e.target.value;
+              setName(newName);
+              // Auto-generate slug from name
+              setSlug(newName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''));
+            }}
             placeholder="e.g. Electronics"
             className="w-full border rounded-lg px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-400"
           />
+        </div>
+
+        {/* Slug (Auto-generated) */}
+        <div>
+          <label className="block text-sm mb-1 font-medium">Slug (Auto-generated)</label>
+          <input
+            type="text"
+            value={slug}
+            readOnly
+            className="w-full border rounded-lg px-4 py-2 text-gray-800 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
+          />
+          <p className="text-xs text-gray-500 mt-1">This field is automatically generated from the category name</p>
         </div>
 
         {/* Parent Category */}

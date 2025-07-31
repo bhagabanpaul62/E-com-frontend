@@ -8,6 +8,7 @@ import { useDropzone } from "react-dropzone";
 export default function EditCategory() {
   const { id } = useParams();
   const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -22,12 +23,13 @@ export default function EditCategory() {
     const fetchCategory = async () => {
       try {
         const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_SERVER}/admin/category/${id}`,
+          `${process.env.NEXT_PUBLIC_SERVER.replace('/api', '')}/api/admin/category/${id}`,
           { withCredentials: true }
         );
         const cat = res.data.data.data;
 
         setName(cat.name || "");
+        setSlug(cat.slug || "");
         setDescription(cat.description || "");
         setIsFeatured(cat.isFeatured || false);
         setParentId(cat.parentId || "");
@@ -41,7 +43,7 @@ export default function EditCategory() {
     const fetchAllCategories = async () => {
       try {
         const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_SERVER}/admin/category`,
+          `${process.env.NEXT_PUBLIC_SERVER.replace('/api', '')}/api/admin/category`,
           { withCredentials: true }
         );
         setAllCategories(res.data.data.data || []);
@@ -108,7 +110,7 @@ export default function EditCategory() {
 
     try {
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_SERVER}/admin/edit-category/${id}`,
+        `${process.env.NEXT_PUBLIC_SERVER.replace('/api', '')}/api/admin/edit-category/${id}`,
         formData,
         {
           withCredentials: true,
@@ -135,10 +137,27 @@ export default function EditCategory() {
           <input
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              const newName = e.target.value;
+              setName(newName);
+              // Auto-generate slug from name
+              setSlug(newName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''));
+            }}
             className="w-full border px-4 py-2 rounded"
             placeholder="Category Name"
           />
+        </div>
+
+        {/* Slug (Auto-generated) */}
+        <div>
+          <label className="block mb-1">Slug (Auto-generated)</label>
+          <input
+            type="text"
+            value={slug}
+            readOnly
+            className="w-full border px-4 py-2 rounded bg-gray-100"
+          />
+          <p className="text-xs text-gray-500 mt-1">This field is automatically generated from the category name</p>
         </div>
 
         {/* Parent Category */}

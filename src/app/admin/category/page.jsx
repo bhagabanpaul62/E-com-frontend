@@ -13,7 +13,7 @@ export default function Category() {
     const fetchCats = async () => {
       try {
         const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_SERVER}/admin/category`,
+          `${process.env.NEXT_PUBLIC_SERVER.replace('/api', '')}/api/admin/category`,
           {
             withCredentials: true,
           }
@@ -63,7 +63,7 @@ export default function Category() {
     if (!confirm(`Are you sure you want to delete this category? ${id}`)) return;
     try {
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_SERVER}/admin/delete-category/${id}`,
+        `${process.env.NEXT_PUBLIC_SERVER.replace('/api', '')}/api/admin/delete-category/${id}`,
         {
           withCredentials: true,
         }
