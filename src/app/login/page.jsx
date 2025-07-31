@@ -32,7 +32,7 @@ const Login = () => {
       // localStorage.setItem("token", res.data.token);
 
       const isAdmin = res?.data?.data?.user?.isAdmin;
-
+      
       if (isAdmin) {
         router.push("/admin");
       } else {

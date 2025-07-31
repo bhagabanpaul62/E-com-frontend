@@ -2,8 +2,8 @@
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 
-export async function getAuthStatus() {
-  const cookieStore = await cookies(); // ✅ await required
+export function getAuthStatus() {
+  const cookieStore = cookies(); // ✅ no await
   const token = cookieStore.get("accessToken")?.value;
 
   if (!token) return null;
