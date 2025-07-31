@@ -30,7 +30,7 @@ export default async function RootLayout({ children }) {
   }
 
   return (
-    <html>
+    <html lang="en">
       <body>
         <SidebarAdmin>
           <div>{children}</div>

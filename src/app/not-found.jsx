@@ -1,5 +1,5 @@
 import { AlertTriangle } from "lucide-react"; // Optional, for icon (if using Lucide)
-import "../globals.css";
+import "./globals.css";
 export default function notFound() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">

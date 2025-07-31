@@ -177,10 +177,20 @@ export default function AddProductForm() {
     }
   };
 
-  // Handle main product image upload
+  // Handle main product image upload with validation
   const handleMainImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setMainImage(e.target.files[0]);
+      const file = e.target.files[0];
+      if (!file.type.startsWith("image/")) {
+        console.error("Invalid file type. Please select an image.");
+        return;
+      }
+      console.log("Selected main image:", {
+        name: file.name,
+        type: file.type,
+        size: `${(file.size / 1024).toFixed(2)}KB`,
+      });
+      setMainImage(file);
     }
   };
 
@@ -260,8 +270,16 @@ export default function AddProductForm() {
       return;
     }
 
+    console.log("🚀 Starting form submission...");
+
     // Create FormData object for file uploads
     const formDataObj = new FormData();
+
+    if (!mainImage) {
+      setSubmitError("Main product image is required");
+      setIsSubmitting(false);
+      return;
+    }
 
     // Prepare the product data, excluding backend-handled fields
     const {
@@ -328,22 +346,19 @@ export default function AddProductForm() {
 
     // Add the product data as JSON string
     formDataObj.append("product", JSON.stringify(productData));
-    console.log("Product data being sent:", productData); // Debug log
+    console.log("📦 Product data being sent:", productData);
 
-    // Add main image file if it exists
+    // Handle main product image
     if (mainImage) {
-      formDataObj.append("productImage", mainImage);
-      console.log("Main image added:", mainImage.name); // Debug log
-    }
-
-    // Add gallery images if they exist
-    if (galleryImages && galleryImages.length > 0) {
-      galleryImages.forEach((image) => {
-        formDataObj.append("productImage", image);
+      console.log("🖼️ Appending main image:", {
+        name: mainImage.name,
+        type: mainImage.type,
+        size: mainImage.size,
       });
+      formDataObj.append("productImage", mainImage);
     }
 
-    // Add variant images if they exist
+    // Auto-generate ASIN if not provided    // Add variant images if they exist
     if (formData.variants && formData.variants.length > 0) {
       // Process variants to ensure attributes are properly formatted and numbers are numbers
       const processedVariants = formData.variants.map((variant) => ({
@@ -366,8 +381,24 @@ export default function AddProductForm() {
       formDataObj.append("variants", JSON.stringify(processedVariants));
 
       // Append variant images
-      Object.entries(variantImages).forEach(([index, image]) => {
-        formDataObj.append(`variant_${index}`, image);
+      Object.entries(variantImages).forEach(([variantIndex, images]) => {
+        // Check if images is an array (multiple images) or single image
+        const imageArray = Array.isArray(images) ? images : [images];
+
+        imageArray.forEach((image, imageIndex) => {
+          if (image) {
+            const fieldName = `variant_${variantIndex}_${imageIndex}`;
+            console.log(
+              `📎 Appending variant image with fieldname: ${fieldName}`,
+              {
+                name: image.name,
+                type: image.type,
+                size: image.size,
+              }
+            );
+            formDataObj.append(fieldName, image);
+          }
+        });
       });
     }
 
@@ -394,65 +425,63 @@ export default function AddProductForm() {
       );
 
       console.log("API Response:", response.data); // Debug log
-     
-        setSubmitSuccess("Product added successfully!");
-        // Reset form or redirect
-        setTimeout(() => {
-          // Reset form data
-          setFormData({
-            name: "",
-            slug: "",
-            brand: "",
-            tags: "",
-            category: "",
-            asin: "",
-            price: 0,
-            mrpPrice: 0,
-            discount: 0,
-            totalStock: 0,
-            description: "",
-            seoTitle: "",
-            seoDescription: "",
-            isFeatured: false,
-            isNewArrival: false,
-            isTrending: false,
-            variants: [],
-            categoryAttributes: [],
-            returnPolicy: {
-              isReturnable: true,
-              isReturnDays: 7,
-              isReturnCost: 0,
-            },
-            warranty: {
-              description: "",
-              warrantyType: "Platform",
-              policy: "",
-            },
-            shippingDetails: {
-              weight: 0,
-              weightUnit: "kg",
-              height: 0,
-              width: 0,
-              depth: 0,
-              dimensionUnit: "cm",
-              shippingOption: [
-                {
-                  shippingType: "Normal",
-                  cost: 0,
-                  estimatedDays: 3,
-                },
-              ],
-            },
-          });
 
-          // Reset file uploads
-          setMainImage(null);
-          setGalleryImages([]);
-          setVariantImages({});
-        }, 2000);
-      
-        
-     
+      setSubmitSuccess("Product added successfully!");
+      // Reset form or redirect
+      setTimeout(() => {
+        // Reset form data
+        setFormData({
+          name: "",
+          slug: "",
+          brand: "",
+          tags: "",
+          category: "",
+          asin: "",
+          price: 0,
+          mrpPrice: 0,
+          discount: 0,
+          totalStock: 0,
+          description: "",
+          seoTitle: "",
+          seoDescription: "",
+          isFeatured: false,
+          isNewArrival: false,
+          isTrending: false,
+          variants: [],
+          categoryAttributes: [],
+          returnPolicy: {
+            isReturnable: true,
+            isReturnDays: 7,
+            isReturnCost: 0,
+          },
+          warranty: {
+            description: "",
+            warrantyType: "Platform",
+            policy: "",
+          },
+          shippingDetails: {
+            weight: 0,
+            weightUnit: "kg",
+            height: 0,
+            width: 0,
+            depth: 0,
+            dimensionUnit: "cm",
+            shippingOption: [
+              {
+                shippingType: "Normal",
+                cost: 0,
+                estimatedDays: 3,
+              },
+            ],
+          },
+        });
+
+        // Reset file uploads
+        setMainImage(null);
+        setGalleryImages([]);
+        setVariantImages({});
+        setSubmitSuccess("");
+      }, 2000);
     } catch (error) {
       console.error("Error adding product:", error);
       setSubmitError(
@@ -1046,15 +1075,39 @@ export default function AddProductForm() {
                   </div>
 
                   <div>
-                    <Label>Variant Image</Label>
-                    <div className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center h-40 mt-2">
+                    <Label>Variant Images</Label>
+
+                    <div
+                      className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center mt-2 relative w-full"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const droppedFiles = Array.from(
+                          e.dataTransfer.files
+                        ).filter((file) => file.type.startsWith("image/"));
+                        if (droppedFiles.length) {
+                          setVariantImages((prev) => ({
+                            ...prev,
+                            [index]: [...(prev[index] || []), ...droppedFiles],
+                          }));
+                        }
+                      }}
+                    >
                       <input
                         type="file"
-                        className="hidden"
                         id={`variant_${index}`}
-                        onChange={(e) => handleVariantImageChange(e, index)}
+                        className="hidden"
+                        multiple
                         accept="image/*"
+                        onChange={(e) => {
+                          const selected = Array.from(e.target.files);
+                          setVariantImages((prev) => ({
+                            ...prev,
+                            [index]: [...(prev[index] || []), ...selected],
+                          }));
+                        }}
                       />
+
                       <Button
                         type="button"
                         variant="outline"
@@ -1063,12 +1116,39 @@ export default function AddProductForm() {
                           document.getElementById(`variant_${index}`).click()
                         }
                       >
-                        Upload Image
+                        Upload Images
                       </Button>
-                      {variantImages[index] && (
-                        <p className="mt-2 text-xs text-green-600">
-                          {variantImages[index].name} selected
-                        </p>
+
+                      {variantImages[index]?.length > 0 && (
+                        <div className="w-full mt-4 flex sm:grid-cols-4 gap-5">
+                          {variantImages[index].map((file, imgIdx) => (
+                            <div
+                              key={imgIdx}
+                              className="relative w-20 h-20 group"
+                            >
+                              <img
+                                src={URL.createObjectURL(file)}
+                                alt={`Variant ${index} - Image ${imgIdx}`}
+                                className="w-full h-full object-cover rounded border"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newImages = [...variantImages[index]];
+                                  newImages.splice(imgIdx, 1);
+                                  setVariantImages((prev) => ({
+                                    ...prev,
+                                    [index]: newImages,
+                                  }));
+                                }}
+                                className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs z-10"
+                                title="Remove"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1101,9 +1181,19 @@ export default function AddProductForm() {
         </TabsContent>
 
         <TabsContent value="images" className="space-y-4">
-          <Label>Product Images</Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center h-40">
+          <Label>Main Product Image</Label>
+
+          <div className="w-full">
+            {/* MAIN IMAGE UPLOAD */}
+            <div
+              className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center relative"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const file = e.dataTransfer.files[0];
+                if (file?.type?.startsWith("image/")) setMainImage(file);
+              }}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-10 w-10 text-gray-400"
@@ -1119,13 +1209,18 @@ export default function AddProductForm() {
                 />
               </svg>
               <p className="mt-2 text-sm text-gray-500">Add main image</p>
+
               <input
                 type="file"
                 className="hidden"
+                name="productImage"
                 id="mainImage"
-                onChange={handleMainImageChange}
                 accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files?.[0]) setMainImage(e.target.files[0]);
+                }}
               />
+
               <Button
                 type="button"
                 variant="outline"
@@ -1135,52 +1230,21 @@ export default function AddProductForm() {
               >
                 Upload
               </Button>
-              {mainImage && (
-                <p className="mt-2 text-xs text-green-600">
-                  {mainImage.name} selected
-                </p>
-              )}
             </div>
 
-            <div className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center h-40">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-10 w-10 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
+            {/* MAIN IMAGE PREVIEW */}
+            {mainImage && (
+              <div className="mt-4">
+                <Label className="text-sm text-gray-600">
+                  Main Image Preview
+                </Label>
+                <img
+                  src={URL.createObjectURL(mainImage)}
+                  alt="Main Preview"
+                  className="mt-2 w-24 h-24 object-cover rounded border"
                 />
-              </svg>
-              <p className="mt-2 text-sm text-gray-500">Add gallery images</p>
-              <input
-                type="file"
-                className="hidden"
-                id="galleryImages"
-                multiple
-                onChange={handleGalleryImagesChange}
-                accept="image/*"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="mt-2"
-                onClick={() => document.getElementById("galleryImages").click()}
-              >
-                Upload
-              </Button>
-              {galleryImages.length > 0 && (
-                <p className="mt-2 text-xs text-green-600">
-                  {galleryImages.length} images selected
-                </p>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </TabsContent>
 
