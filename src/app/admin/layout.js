@@ -10,8 +10,10 @@ export const metadata = {
 
 export default async function RootLayout({ children }) {
   const user = await getAuthStatus();
-
+  console.log("our is", user);
+  
   if (!user || !user.isAdmin) {
+
     return (
       <html>
         <body className="flex justify-center items-center h-screen text-xl text-red-600 gap-20">
