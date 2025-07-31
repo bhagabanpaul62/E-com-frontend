@@ -1,3 +1,6 @@
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
+
 export function getAuthStatus() {
   const cookieStore = cookies();
   const token = cookieStore.get("accessToken")?.value;
