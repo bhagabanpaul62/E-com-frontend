@@ -9,9 +9,10 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-  const user = getAuthStatus();
-  console.log("our is", user);
   
+const user = getAuthStatus();
+console.log("👤 User status:", user);
+
   if (!user || !user.isAdmin || user.status !== 'Active') {
 
     return (
