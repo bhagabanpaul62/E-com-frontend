@@ -9,24 +9,20 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-  
-const user = getAuthStatus();
-console.log("👤 User status:", user);
+  const user = await getAuthStatus(); // ✅ Await the async call
+  console.log("👤 User status:", user);
 
-  if (!user || !user.isAdmin || user.status !== 'Active') {
-
+  if (!user || !user.isAdmin || user.status !== "Active") {
     return (
       <html>
         <body className="flex justify-center items-center h-screen text-xl text-red-600 gap-20">
           Access Denied – Admins only
-          
-            <Link
-              href="/login"
-              className="bg-amber-300 px-5 py-2 w-20 h-12 flex justify-center items-center rounded"
-            >
-              Login
-            </Link>
-          
+          <Link
+            href="/login"
+            className="bg-amber-300 px-5 py-2 w-20 h-12 flex justify-center items-center rounded"
+          >
+            Login
+          </Link>
         </body>
       </html>
     );

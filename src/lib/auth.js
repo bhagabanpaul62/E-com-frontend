@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 
-export function getAuthStatus() {
+export async function getAuthStatus() {
   const cookieStore = cookies();
   const token = cookieStore.get("accessToken")?.value;
 
@@ -17,4 +17,3 @@ export function getAuthStatus() {
     return { debug: "Invalid token", error: err.message };
   }
 }
-
