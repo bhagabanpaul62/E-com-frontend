@@ -32,7 +32,7 @@ export default async function RootLayout({ children }) {
     <html lang="en">
       <body>
         <SidebarAdmin>
-          <div>{children}</div>
+          {children}
         </SidebarAdmin>
       </body>
     </html>
