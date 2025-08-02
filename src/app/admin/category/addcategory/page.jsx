@@ -119,7 +119,7 @@ export default function AddCategory() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-10">
+    <div className="w-[70vw] mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold mb-10">Create Category</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Name */}
@@ -132,7 +132,12 @@ export default function AddCategory() {
               const newName = e.target.value;
               setName(newName);
               // Auto-generate slug from name
-              setSlug(newName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''));
+              setSlug(
+                newName
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")
+                  .replace(/[^\w-]+/g, "")
+              );
             }}
             placeholder="e.g. Electronics"
             className="w-full border rounded-lg px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-400"
@@ -141,14 +146,18 @@ export default function AddCategory() {
 
         {/* Slug (Auto-generated) */}
         <div>
-          <label className="block text-sm mb-1 font-medium">Slug (Auto-generated)</label>
+          <label className="block text-sm mb-1 font-medium">
+            Slug (Auto-generated)
+          </label>
           <input
             type="text"
             value={slug}
             readOnly
             className="w-full border rounded-lg px-4 py-2 text-gray-800 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
           />
-          <p className="text-xs text-gray-500 mt-1">This field is automatically generated from the category name</p>
+          <p className="text-xs text-gray-500 mt-1">
+            This field is automatically generated from the category name
+          </p>
         </div>
 
         {/* Parent Category */}

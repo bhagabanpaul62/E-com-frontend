@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,13 +15,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useParams } from "next/navigation";
 
-export default function AddProductForm() {
+
+export default function EditProductForm() {
   // State for file uploads
+  const router = useRouter();
+  const { id } = useParams();
   const [mainImage, setMainImage] = useState(null);
   const [galleryImages, setGalleryImages] = useState([]);
   const [variantImages, setVariantImages] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState("");
 
@@ -44,6 +50,8 @@ export default function AddProductForm() {
     variants: [],
     selectedCategory: null,
     categoryAttributes: [],
+    existingMainImage: null,
+    existingVariantImages: {},
     returnPolicy: {
       isReturnable: true,
       isReturnDays: 7,
@@ -77,19 +85,118 @@ export default function AddProductForm() {
     const fetchCategories = async () => {
       try {
         const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_SERVER.replace(
-            "/api",
-            ""
-          )}/api/admin/category`,
+          `${process.env.NEXT_PUBLIC_SERVER}/admin/categories`,
           { withCredentials: true }
         );
-        setCategories(res.data.data.data);
+        setCategories(res.data.data);
       } catch (err) {
         console.error("Failed to load categories", err);
       }
     };
-    fetchCategories();
-  }, []);
+    
+    const fetchProductData = async () => {
+      if (id) {
+        try {
+          const res = await axios.get(
+            `${process.env.NEXT_PUBLIC_SERVER}/admin/view-product-by-id/${id}`,
+            { withCredentials: true }
+          );
+          const productData = res.data.data;
+          console.log("Product data loaded:", productData);
+          
+          // Find the selected category from the categories array
+          const categoryId = productData.categoryId || "";
+          const selectedCategory = categories.find((cat) => cat._id === categoryId);
+          
+          // Get category attributes if available
+          let categoryAttributes = [];
+          if (selectedCategory && selectedCategory.attributes) {
+            categoryAttributes = selectedCategory.attributes.filter(
+              (attr) =>
+                attr.name &&
+                Array.isArray(attr.values) &&
+                attr.values.some((val) => val && val.trim() !== "")
+            );
+          }
+          
+          // Update form data with the fetched product details
+          setFormData({
+            ...formData,
+            name: productData.name || "",
+            slug: productData.slug || "",
+            brand: productData.brand || "",
+            tags: Array.isArray(productData.tags) ? productData.tags.join(", ") : "",
+            category: categoryId,
+            selectedCategory: selectedCategory || null,
+            categoryAttributes: categoryAttributes,
+            asin: productData.asin || "",
+            price: productData.price || 0,
+            mrpPrice: productData.mrpPrice || 0,
+            discount: productData.discount || 0,
+            totalStock: productData.totalStock || 0,
+            description: productData.description || "",
+            seoTitle: productData.seoTitle || "",
+            seoDescription: productData.seoDescription || "",
+            isFeatured: productData.isFeatured || false,
+            isNewArrival: productData.isNewArrival || false,
+            isTrending: productData.isTrending || false,
+            variants: productData.variants || [],
+            returnPolicy: productData.returnPolicy || formData.returnPolicy,
+            warranty: productData.warranty || formData.warranty,
+            shippingDetails: productData.shippingDetails || formData.shippingDetails,
+          });
+          
+          // Set existing images URLs for display
+          if (productData.mainImage) {
+            // Store the URL of the existing main image
+            setFormData(prev => ({
+              ...prev,
+              existingMainImage: productData.mainImage
+            }));
+            console.log("Main image exists:", productData.mainImage);
+          }
+          
+          if (productData.variants && productData.variants.length > 0) {
+            // Handle variant images
+            const existingVariantImagesObj = {};
+            productData.variants.forEach((variant, index) => {
+              if (variant.images && variant.images.length > 0) {
+                existingVariantImagesObj[index] = variant.images;
+                console.log(`Variant ${index} has images:`, variant.images);
+              }
+            });
+            
+            // Store existing variant images URLs
+            setFormData(prev => ({
+              ...prev,
+              existingVariantImages: existingVariantImagesObj
+            }));
+          }
+        } catch (err) {
+          console.error("Failed to load product data", err);
+        }
+      }
+    };
+    
+    const loadData = async () => {
+       setIsLoading(true);
+       try {
+         // First fetch categories
+         await fetchCategories();
+         
+         // Then fetch product data if we have an ID
+         if (id) {
+           await fetchProductData();
+         }
+       } catch (error) {
+         console.error("Error loading data:", error);
+       } finally {
+         setIsLoading(false);
+       }
+     };
+     
+     loadData();
+   }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -275,7 +382,8 @@ export default function AddProductForm() {
     // Create FormData object for file uploads
     const formDataObj = new FormData();
 
-    if (!mainImage) {
+    // Only require main image for new products, not for edits
+    if (!id && !mainImage) {
       setSubmitError("Main product image is required");
       setIsSubmitting(false);
       return;
@@ -361,21 +469,30 @@ export default function AddProductForm() {
     // Auto-generate ASIN if not provided    // Add variant images if they exist
     if (formData.variants && formData.variants.length > 0) {
       // Process variants to ensure attributes are properly formatted and numbers are numbers
-      const processedVariants = formData.variants.map((variant) => ({
-        ...variant,
-        price: Number(variant.price) || 0,
-        stock: Number(variant.stock) || 0,
-        attributes:
-          typeof variant.attributes === "string"
-            ? (() => {
-                try {
-                  return JSON.parse(variant.attributes);
-                } catch (e) {
-                  return {};
-                }
-              })()
-            : variant.attributes,
-      }));
+      const processedVariants = formData.variants.map((variant, index) => {
+        // Get existing images for this variant if available
+        const existingImages = formData.existingVariantImages && formData.existingVariantImages[index] 
+          ? formData.existingVariantImages[index] 
+          : [];
+          
+        return {
+          ...variant,
+          price: Number(variant.price) || 0,
+          stock: Number(variant.stock) || 0,
+          // Include existing images in the variant data
+          existingImages: existingImages,
+          attributes:
+            typeof variant.attributes === "string"
+              ? (() => {
+                  try {
+                    return JSON.parse(variant.attributes);
+                  } catch (e) {
+                    return {};
+                  }
+                })()
+              : variant.attributes,
+        };
+      });
 
       // Append variant data as JSON
       formDataObj.append("variants", JSON.stringify(processedVariants));
@@ -384,6 +501,11 @@ export default function AddProductForm() {
       Object.entries(variantImages).forEach(([variantIndex, images]) => {
         // Check if images is an array (multiple images) or single image
         const imageArray = Array.isArray(images) ? images : [images];
+        
+        // If we have new images for this variant, add a flag to indicate existing images should be replaced
+        if (imageArray.length > 0) {
+          formDataObj.append(`replace_variant_images_${variantIndex}`, "true");
+        }
 
         imageArray.forEach((image, imageIndex) => {
           if (image) {
@@ -407,14 +529,17 @@ export default function AddProductForm() {
       console.log(pair[0], pair[1]);
     }
 
-    // Use correct API endpoint
+    // Use correct API endpoint based on whether we're editing or creating
     try {
-      console.log(
-        "API URL:",
-        `${process.env.NEXT_PUBLIC_SERVER}/admin/add-product`
-      );
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER}/admin/add-product`,
+      const apiUrl = id
+        ? `${process.env.NEXT_PUBLIC_SERVER}/admin/edit-product/${id}`
+        : `${process.env.NEXT_PUBLIC_SERVER}/admin/add-product`;
+      
+      const httpMethod = id ? axios.patch : axios.post;
+      
+      console.log("API URL:", apiUrl);
+      const response = await httpMethod(
+        apiUrl,
         formDataObj,
         {
           withCredentials: true,
@@ -426,7 +551,7 @@ export default function AddProductForm() {
 
       console.log("API Response:", response.data); // Debug log
 
-      setSubmitSuccess("Product added successfully!");
+      setSubmitSuccess(id ? "Product updated successfully!" : "Product added successfully!");
       // Reset form or redirect
       setTimeout(() => {
         // Reset form data
@@ -480,22 +605,36 @@ export default function AddProductForm() {
         setMainImage(null);
         setGalleryImages([]);
         setVariantImages({});
+        router.push("/admin/product");
         setSubmitSuccess("");
       }, 2000);
     } catch (error) {
       console.error("Error adding product:", error);
       setSubmitError(
         error.response?.data?.message ||
-          "Failed to add product. Please try again."
+          id ? "Failed to update product. Please try again." : "Failed to add product. Please try again."
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-lg">Loading product data...</p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <form onSubmit={handleSubmit} className="w-[70vw] mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Add New Product</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        {id ? "Edit Product" : "Add New Product"}
+      </h1>
 
       <Tabs defaultValue="basicInfo" className="w-full">
         <TabsList className="mb-6 overflow-x-auto">
@@ -529,7 +668,7 @@ export default function AddProductForm() {
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((cat) => (
+              {categories?.map((cat) => (
                 <SelectItem key={cat._id} value={cat._id}>
                   {cat.name}
                 </SelectItem>
@@ -1119,37 +1258,98 @@ export default function AddProductForm() {
                         Upload Images
                       </Button>
 
+                      {/* New uploaded variant images */}
                       {variantImages[index]?.length > 0 && (
-                        <div className="w-full mt-4 flex sm:grid-cols-4 gap-5">
-                          {variantImages[index].map((file, imgIdx) => (
-                            <div
-                              key={imgIdx}
-                              className="relative w-20 h-20 group"
-                            >
-                              <img
-                                src={URL.createObjectURL(file)}
-                                alt={`Variant ${index} - Image ${imgIdx}`}
-                                className="w-full h-full object-cover rounded border"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const newImages = [...variantImages[index]];
-                                  newImages.splice(imgIdx, 1);
-                                  setVariantImages((prev) => ({
-                                    ...prev,
-                                    [index]: newImages,
-                                  }));
-                                }}
-                                className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs z-10"
-                                title="Remove"
+                        <div className="w-full mt-4">
+                          <Label className="text-sm text-gray-600 mb-2 block">
+                            New Uploaded Images
+                          </Label>
+                          <div className="flex flex-wrap gap-5">
+                            {variantImages[index].map((file, imgIdx) => (
+                              <div
+                                key={imgIdx}
+                                className="relative w-20 h-20 group"
                               >
-                                ×
-                              </button>
-                            </div>
-                          ))}
+                                <img
+                                  src={URL.createObjectURL(file)}
+                                  alt={`Variant ${index} - Image ${imgIdx}`}
+                                  className="w-full h-full object-cover rounded border"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newImages = [...variantImages[index]];
+                                    newImages.splice(imgIdx, 1);
+                                    setVariantImages((prev) => ({
+                                      ...prev,
+                                      [index]: newImages,
+                                    }));
+                                  }}
+                                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs z-10"
+                                  title="Remove"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
+
+                      {/* Existing variant images from database */}
+                      {formData.existingVariantImages &&
+                        formData.existingVariantImages[index]?.length > 0 && (
+                          <div className="w-full mt-4">
+                            <Label className="text-sm text-gray-600 mb-2 block">
+                              Current Images
+                            </Label>
+                            <div className="flex flex-wrap gap-5">
+                              {formData.existingVariantImages[index].map(
+                                (imageUrl, imgIdx) => (
+                                  <div
+                                    key={`existing-${imgIdx}`}
+                                    className="relative w-20 h-20 group"
+                                  >
+                                    <img
+                                      src={imageUrl}
+                                      alt={`Variant ${index} - Existing Image ${imgIdx}`}
+                                      className="w-full h-full object-cover rounded border"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        // Create a copy of the existing images array
+                                        const newExistingImages = [
+                                          ...formData.existingVariantImages[
+                                            index
+                                          ],
+                                        ];
+                                        // Remove the image at the specified index
+                                        newExistingImages.splice(imgIdx, 1);
+                                        // Update the formData state
+                                        setFormData((prev) => ({
+                                          ...prev,
+                                          existingVariantImages: {
+                                            ...prev.existingVariantImages,
+                                            [index]: newExistingImages,
+                                          },
+                                        }));
+                                      }}
+                                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs z-10"
+                                      title="Remove"
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                )
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Click × to remove individual images or upload new
+                              images above to add more
+                            </p>
+                          </div>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -1233,10 +1433,10 @@ export default function AddProductForm() {
             </div>
 
             {/* MAIN IMAGE PREVIEW */}
-            {mainImage && (
+            {mainImage ? (
               <div className="mt-4">
                 <Label className="text-sm text-gray-600">
-                  Main Image Preview
+                  Main Image Preview (New Upload)
                 </Label>
                 <img
                   src={URL.createObjectURL(mainImage)}
@@ -1244,7 +1444,21 @@ export default function AddProductForm() {
                   className="mt-2 w-24 h-24 object-cover rounded border"
                 />
               </div>
-            )}
+            ) : formData.existingMainImage ? (
+              <div className="mt-4">
+                <Label className="text-sm text-gray-600">
+                  Current Main Image
+                </Label>
+                <img
+                  src={formData.existingMainImage}
+                  alt="Current Main Image"
+                  className="mt-2 w-24 h-24 object-cover rounded border"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Upload a new image to replace this one
+                </p>
+              </div>
+            ) : null}
           </div>
         </TabsContent>
 
@@ -1369,6 +1583,8 @@ export default function AddProductForm() {
               </svg>
               Processing...
             </>
+          ) : id ? (
+            "Update Product"
           ) : (
             "Save Product"
           )}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { ChevronDown, ChevronRight, Pencil, Trash2 } from "lucide-react";
+import { AiOutlineEnter } from "react-icons/ai";
 
 export default function Category() {
   const [categories, setCategories] = useState([]);
@@ -113,7 +114,11 @@ export default function Category() {
                     <span className="inline-block w-4" />
                   )}
                 </span>
-                <span className="font-medium">{cat.name}</span>
+                <span className="font-medium flex items-center gap-1">
+                  {parentId && <AiOutlineEnter className="text-gray-500 text-xl rotate-y-180" />}{" "}
+                  {/* Icon only for children */}
+                  {cat.name}
+                </span>
               </div>
             </td>
             <td className="px-4 py-3 text-sm text-gray-700">{cat.slug}</td>
@@ -156,7 +161,7 @@ export default function Category() {
           cat.attributes?.length > 0 &&
           cat.attributes.some((a) => a.name) ? (
             <tr key={`${cat._id}-attr`}>
-              <td colSpan={6} className="bg-gray-200 px-8 py-3">
+              <td colSpan={6} className="bg-gray-200 px-15 py-3">
                 <div className="text-sm font-semibold mb-2 text-gray-800">
                   Attributes
                 </div>
@@ -166,14 +171,14 @@ export default function Category() {
                       attr.name && (
                         <div
                           key={idx}
-                          className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                          className="bg-white w-[15vw] border border-gray-200 rounded-lg p-4 shadow-sm"
                         >
                           <h4 className="text-base font-semibold text-gray-800 mb-3 border-b pb-1">
                             {attr.name}
                           </h4>
                           <dl className="space-y-2">
                             {Object.entries(attr).map(([key, value]) => {
-                              if (key === "name" || key === "id") return null;
+                              if (key === "name" || key === "_id") return null;
 
                               const formattedValue = Array.isArray(value)
                                 ? value.join(", ")

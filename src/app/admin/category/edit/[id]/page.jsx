@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import axios from "axios";
 import { useDropzone } from "react-dropzone";
 
+
 export default function EditCategory() {
   const { id } = useParams();
   const [name, setName] = useState("");
@@ -128,7 +129,7 @@ export default function EditCategory() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-10">
+    <div className="w-[70vw] mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold mb-10">Edit Category</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Name */}
@@ -141,7 +142,12 @@ export default function EditCategory() {
               const newName = e.target.value;
               setName(newName);
               // Auto-generate slug from name
-              setSlug(newName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''));
+              setSlug(
+                newName
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")
+                  .replace(/[^\w-]+/g, "")
+              );
             }}
             className="w-full border px-4 py-2 rounded"
             placeholder="Category Name"
@@ -157,7 +163,9 @@ export default function EditCategory() {
             readOnly
             className="w-full border px-4 py-2 rounded bg-gray-100"
           />
-          <p className="text-xs text-gray-500 mt-1">This field is automatically generated from the category name</p>
+          <p className="text-xs text-gray-500 mt-1">
+            This field is automatically generated from the category name
+          </p>
         </div>
 
         {/* Parent Category */}

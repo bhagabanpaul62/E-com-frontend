@@ -1,22 +1,19 @@
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
+
 export async function getAuthStatus() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken")?.value;
+
+  console.log("🪙 accessToken:", token);
+
+  if (!token) return { debug: "No token found" };
+
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/api/check-auth`,
-      {
-        method: "GET",
-        credentials: "include", // important to send cookies
-      }
-    );
-
-    if (!res.ok) {
-      console.log("Auth failed:", await res.json());
-      return null;
-    }
-
-    const user = await res.json();
-    return user;
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    return decoded;
   } catch (err) {
-    console.error("Failed to fetch auth status:", err);
-    return null;
+    console.error("❌ JWT error:", err);
+    return { debug: "Invalid token", error: err.message };
   }
 }
