@@ -1,3 +1,4 @@
+import Nav from "@/components/user/nav";
 import "../globals.css";
 
 export const metadata = {
@@ -6,5 +7,8 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  return <main>{children}</main>;
+  return <main>
+    
+    {children}
+    </main>;
 }

@@ -15,18 +15,22 @@ export default function AddCategory() {
   const [loading, setLoading] = useState(false);
   const [parentId, setParentId] = useState("");
   const [categories, setCategories] = useState([]);
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
+  const [selectedCategoryPath, setSelectedCategoryPath] = useState([]);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_SERVER.replace('/api', '')}/api/admin/category`,{
-            withCredentials:true
+          `${process.env.NEXT_PUBLIC_SERVER.replace(
+            "/api",
+            ""
+          )}/api/admin/category`,
+          {
+            withCredentials: true,
           }
         );
         setCategories(res.data.data.data);
-        
-        
       } catch (err) {
         console.error("Failed to load categories");
       }
@@ -69,7 +73,7 @@ export default function AddCategory() {
     const formData = new FormData();
 
     formData.append("name", name);
-    
+
     formData.append("description", description);
     formData.append("isFeatured", isFeatured);
     if (parentId) formData.append("parentId", parentId);
@@ -90,11 +94,14 @@ export default function AddCategory() {
 
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER.replace('/api', '')}/api/admin/add-category`,
+        `${process.env.NEXT_PUBLIC_SERVER.replace(
+          "/api",
+          ""
+        )}/api/admin/add-category`,
         formData,
         {
-          withCredentials:true,
-        
+          withCredentials: true,
+
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -165,18 +172,39 @@ export default function AddCategory() {
           <label className="block text-sm mb-1 font-medium">
             Parent Category
           </label>
-          <select
-            value={parentId}
-            onChange={(e) => setParentId(e.target.value)}
-            className="w-full border rounded-lg px-4 py-2 text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400"
-          >
-            <option value="">Select Parent Category</option>
-            {categories?.map((cat) => (
-              <option key={cat._id} value={cat._id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+          <div className="relative inline-block w-full">
+            <button
+              type="button"
+              className="w-full border rounded-lg px-4 py-2 text-gray-800 bg-white flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-teal-400"
+              onClick={() => setCategoryMenuOpen((open) => !open)}
+            >
+              {selectedCategoryPath.length > 0
+                ? selectedCategoryPath.map((cat) => cat.name).join(" → ")
+                : "Select Parent Category"}
+              <span className="ml-2">▼</span>
+            </button>
+            {categoryMenuOpen && (
+              <div
+                className="absolute z-50 mt-2 bg-white border rounded-md shadow-lg flex min-w-[250px]"
+                style={{ minHeight: 200 }}
+              >
+                <CascadingMenu
+                  categories={categories}
+                  onSelect={(cat, path) => {
+                    setParentId(cat._id);
+                    setSelectedCategoryPath(path);
+                    setCategoryMenuOpen(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+          {selectedCategoryPath.length > 0 && (
+            <p className="mt-2 text-sm text-gray-600">
+              Selected Path:{" "}
+              {selectedCategoryPath.map((cat) => cat.name).join(" → ")}
+            </p>
+          )}
         </div>
 
         {/* Description */}
@@ -278,6 +306,54 @@ export default function AddCategory() {
           </button>
         </div>
       </form>
+    </div>
+  );
+}
+
+function CascadingMenu({ categories, parentId = null, path = [], onSelect }) {
+  const items = categories.filter((cat) => {
+    const pId =
+      typeof cat.parentId === "object" ? cat.parentId?._id : cat.parentId;
+    return pId === parentId || (!pId && !parentId);
+  });
+  const [hovered, setHovered] = useState(null);
+  return (
+    <div className="flex">
+      <div className="min-w-[180px] border-r bg-white">
+        {items.map((cat) => (
+          <div
+            key={cat._id}
+            className={`px-4 py-2 cursor-pointer hover:bg-accent ${
+              hovered && hovered._id === cat._id ? "bg-accent" : ""
+            }`}
+            onMouseEnter={() => setHovered(cat)}
+            onClick={() => {
+              // Allow selection of any category, regardless of whether it has children
+              onSelect(cat, [...path, cat]);
+            }}
+          >
+            {cat.name}
+            {categories.some((c) => {
+              const pId =
+                typeof c.parentId === "object" ? c.parentId?._id : c.parentId;
+              return pId === cat._id;
+            }) && <span className="float-right">▶</span>}
+          </div>
+        ))}
+      </div>
+      {hovered &&
+        categories.some((c) => {
+          const pId =
+            typeof c.parentId === "object" ? c.parentId?._id : c.parentId;
+          return pId === hovered._id;
+        }) && (
+          <CascadingMenu
+            categories={categories}
+            parentId={hovered._id}
+            path={[...path, hovered]}
+            onSelect={onSelect}
+          />
+        )}
     </div>
   );
 }
