@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Node.js app to Azure Web App - Tajbee
 
 on:
@@ -13,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -21,33 +18,58 @@ jobs:
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version: '22.x'
+          node-version: '20.x'  # Recommended for Next.js 15
 
-      - name: npm install, build, and test
-        run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Upload artifact for deployment job
+      - name: Build Next.js app
+        run: npm run build
+
+      - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
-          name: node-app
-          path: .
+          name: next-app
+          path: .next
+          retention-days: 1
+
+      - name: Upload public folder (if any)
+        if: ${{ fs.existsSync('public') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-folder
+          path: public
+          retention-days: 1
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build]
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
-      - name: Download artifact from build job
+      - name: Download built app
         uses: actions/download-artifact@v4
         with:
-          name: node-app
-      
+          name: next-app
+          path: .next
+
+      - name: Download public folder
+        uses: actions/download-artifact@v4
+        with:
+          name: public-folder
+          path: public
+        if: ${{ steps.download_public.outputs.download-skip-reason != 'not_found' }}
+
+      - name: Download root files (package.json, etc.)
+        uses: actions/checkout@v4
+
+      # Copy required root files
+      - name: Copy root files
+        run: |
+          cp package.json .npmrc .env* . || true
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -55,11 +77,9 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_75BA99A0B1A54F7F910FF65128117776 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_75E26E5ED3F443D99DB33D91F87B10E1 }}
 
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'Tajbee'
           slot-name: 'Production'
           package: .
-          
