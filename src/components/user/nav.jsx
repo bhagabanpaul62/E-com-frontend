@@ -18,8 +18,27 @@ import {
 export default function Nav({ user }) {
   const [enterMouse, setEnterMouse] = useState(false);
   const [Login, setLogin] = useState(false);
+  const [localUser, setLocalUser] = useState(null);
+
   useEffect(() => {
-    if (!user || !user.name) {
+    // First check if we have a server-provided user
+    if (user && user.name) {
+      setLogin(false);
+      return;
+    }
+
+    // If no server user, check localStorage
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        setLocalUser(parsedUser);
+        setLogin(false);
+      } else {
+        setLogin(true);
+      }
+    } catch (error) {
+      console.error("Error reading from localStorage:", error);
       setLogin(true);
     }
   }, [user]);
@@ -31,6 +50,10 @@ export default function Nav({ user }) {
 
   const LogOut = async () => {
     try {
+      // Clear localStorage first
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER}/users/logout`,
         {}, // empty body
@@ -39,10 +62,15 @@ export default function Nav({ user }) {
         }
       );
       console.log("Logout successful:", res.data);
-      setLogin(false);
+      setLogin(true);
+      setLocalUser(null);
       window.location.reload();
     } catch (error) {
       console.error("Logout failed:", error);
+      // Even if API call fails, ensure local state is cleared
+      setLogin(true);
+      setLocalUser(null);
+      window.location.reload();
     }
   };
 
@@ -83,7 +111,11 @@ export default function Nav({ user }) {
             <span className="hidden sm:inline">Login</span>
           ) : (
             <span className="hidden sm:inline">
-              {user?.fullName || user?.name || "Account"}
+              {user?.fullName ||
+                user?.name ||
+                localUser?.fullName ||
+                localUser?.name ||
+                "Account"}
             </span>
           )}
           <FaChevronDown className="text-base text-gray-500 transition-transform duration-200 group-hover:rotate-180" />

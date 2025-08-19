@@ -14,7 +14,16 @@ const nextConfig = {
       },
     ];
   },
-  // We removed the experimental section completely
+  // Add support for cross-origin API requests
+  async rewrites() {
+    return [
+      {
+        source: "/api/v1/:path*",
+        destination:
+          "https://tajbee-backend-g2exf9drgrejg0bh.centralindia-01.azurewebsites.net/api/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -33,9 +33,14 @@ const Login = () => {
 
       console.log("Login response:", res.data);
 
-      // Save access token in localStorage as a fallback
+      // Save access token and user data in localStorage as a fallback
       if (res?.data?.data?.accessToken) {
         localStorage.setItem("accessToken", res.data.data.accessToken);
+      }
+
+      // Save user data in localStorage
+      if (res?.data?.data?.user) {
+        localStorage.setItem("user", JSON.stringify(res.data.data.user));
       }
 
       const isAdmin = res?.data?.data?.user?.isAdmin;
