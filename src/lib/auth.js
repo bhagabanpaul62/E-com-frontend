@@ -1,19 +1,28 @@
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 
+export const dynamic = "force-dynamic";
+
 export async function getAuthStatus() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("accessToken")?.value;
-
-  console.log("🪙 accessToken:", token);
-
-  if (!token) return { debug: "No token found" };
-
   try {
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    return decoded;
+    const cookieStore = cookies();
+    // Using optional chaining to safely handle when cookie might not exist
+    const token = cookieStore.get("accessToken")?.value;
+
+    console.log("🪙 accessToken:", token);
+
+    if (!token) return null;
+
+    try {
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      console.log("🔓 Decoded token:", decoded);
+      return decoded;
+    } catch (err) {
+      console.error("❌ JWT error:", err);
+      return null;
+    }
   } catch (err) {
-    console.error("❌ JWT error:", err);
-    return { debug: "Invalid token", error: err.message };
+    console.error("❌ Cookie error:", err);
+    return null;
   }
 }

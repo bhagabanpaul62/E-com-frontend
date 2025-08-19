@@ -24,19 +24,27 @@ const Login = () => {
           password,
         },
         {
-          withCredentials: true, // if you're using cookies for auth
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 
-      // Optional: store token if returned
-      // localStorage.setItem("token", res.data.token);
+      console.log("Login response:", res.data);
+
+      // Save access token in localStorage as a fallback
+      if (res?.data?.data?.accessToken) {
+        localStorage.setItem("accessToken", res.data.data.accessToken);
+      }
 
       const isAdmin = res?.data?.data?.user?.isAdmin;
-      
+
       if (isAdmin) {
-        router.push("/admin");
+        // Force a hard refresh to ensure cookies are properly set
+        window.location.href = "/admin";
       } else {
-        router.push("/");
+        window.location.href = "/";
       }
     } catch (error) {
       const msg =

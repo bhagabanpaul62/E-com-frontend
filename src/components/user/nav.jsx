@@ -19,10 +19,10 @@ export default function Nav({ user }) {
   const [enterMouse, setEnterMouse] = useState(false);
   const [Login, setLogin] = useState(false);
   useEffect(() => {
-    if (!user.name) {
+    if (!user || !user.name) {
       setLogin(true);
     }
-  },[]);
+  }, [user]);
 
   const handelMouseEnter = (e) => {
     console.log("maouse enter", e);
@@ -39,7 +39,7 @@ export default function Nav({ user }) {
         }
       );
       console.log("Logout successful:", res.data);
-      setLogin(false)
+      setLogin(false);
       window.location.reload();
     } catch (error) {
       console.error("Logout failed:", error);
@@ -82,7 +82,9 @@ export default function Nav({ user }) {
           {Login ? (
             <span className="hidden sm:inline">Login</span>
           ) : (
-            <span className="hidden sm:inline">{user.name}</span>
+            <span className="hidden sm:inline">
+              {user?.fullName || user?.name || "Account"}
+            </span>
           )}
           <FaChevronDown className="text-base text-gray-500 transition-transform duration-200 group-hover:rotate-180" />
           {enterMouse && (
