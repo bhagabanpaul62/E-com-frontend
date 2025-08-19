@@ -1,4 +1,7 @@
-name: Build and Deploy Next.js app to Azure Web App - Tajbee
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy Next.js app to Azure Web App - Tajbee
 
 on:
   push:
@@ -20,6 +23,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '22.x'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -27,18 +31,11 @@ jobs:
       - name: Build Next.js app
         run: npm run build
 
-      # keep only files needed for production
-      - name: Prepare deployment package
-        run: |
-          mkdir deploy
-          cp -r .next public package.json package-lock.json deploy/
-          cp -r node_modules deploy/ || echo "node_modules will be installed on server"
-
-      - name: Upload artifact
+      - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
           name: nextjs-app
-          path: deploy
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
@@ -48,22 +45,21 @@ jobs:
       contents: read
 
     steps:
-      - name: Download build artifact
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: nextjs-app
-          path: .
 
-      - name: Login to Azure
+      - name: Azure Login
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_2597408214B54394AABD55070EBF9BB7 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4E3142E487D74F0894F3A8F299D86C50 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6A9385EBFD1E4CE5BBAD697AE521C411 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
 
-      - name: Deploy to Azure Web App
+      - name: Deploy to Azure Web App (Production)
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'Tajbee'
+          app-name: 'Tajbee'   # Your Azure Web App name
           slot-name: 'Production'
           package: .
