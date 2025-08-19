@@ -44,7 +44,7 @@ export default function Category() {
         });
 
         setCategories(fetchedCategories);
-        setOpenIds(Object.fromEntries([...idsToOpen].map((id) => [id, true])));
+        setOpenIds(Object.fromEntries([...idsToOpen].map((id) => [id, false])));
       } catch (err) {
         console.error("Failed to fetch categories", err);
       }

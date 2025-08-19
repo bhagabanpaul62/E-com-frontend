@@ -1,4 +1,6 @@
 "use client";
+import Banner from "@/components/user/banner";
+import CategoryWithImage from "@/components/user/categoryWithImage";
 import axios from "axios";
 import Link from "next/link";
 
@@ -19,8 +21,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen gap-10">
-      
+    <div>
+      <Banner/>
+      <CategoryWithImage/>
     </div>
   );
 }

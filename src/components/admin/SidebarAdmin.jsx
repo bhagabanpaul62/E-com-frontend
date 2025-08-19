@@ -6,6 +6,7 @@ import { IoBagAddOutline, IoLocationOutline } from "react-icons/io5";
 import { MdOutlineReviews } from "react-icons/md";
 import { FaRegUser } from "react-icons/fa";
 import { RiCoupon2Line } from "react-icons/ri";
+import { MdOutlineDesignServices } from "react-icons/md";
 import { IconArrowLeft, IconBrandTabler } from "@tabler/icons-react";
 import { Sidebar, SidebarBody, SidebarLink } from "../ui/sidebar";
 import { cn } from "@/lib/utils";
@@ -51,6 +52,13 @@ export function SidebarAdmin({ children }) {
       label: "Reviews",
       href: "/admin/reviews",
       icon: <MdOutlineReviews className="h-5 w-5 shrink-0 text-neutral-700" />,
+    },
+    {
+      label: "UI Management",
+      href: "/admin/uiUpdate",
+      icon: (
+        <MdOutlineDesignServices className="h-5 w-5 shrink-0 text-neutral-700" />
+      ),
     },
     {
       label: "Logout",
