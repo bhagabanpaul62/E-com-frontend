@@ -4,19 +4,48 @@ import React, { useState } from "react";
 import { BiCategory } from "react-icons/bi";
 import { IoBagAddOutline, IoLocationOutline } from "react-icons/io5";
 import { MdOutlineReviews } from "react-icons/md";
-import { FaRegUser } from "react-icons/fa";
+import { FaRegUser, FaSignOutAlt } from "react-icons/fa";
 import { RiCoupon2Line } from "react-icons/ri";
 import { MdOutlineDesignServices } from "react-icons/md";
 import { IconArrowLeft, IconBrandTabler } from "@tabler/icons-react";
 import { Sidebar, SidebarBody, SidebarLink } from "../ui/sidebar";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
+import axios from "axios";
 
 // Sidebar width constants
 const COLLAPSED_WIDTH = "w-[60px]";
 const EXPANDED_WIDTH = "w-[250px]";
 
 export function SidebarAdmin({ children }) {
+  // Admin logout handler
+  const handleLogout = async () => {
+    try {
+      // Clear admin-specific localStorage items
+      localStorage.removeItem("isAdmin");
+      localStorage.removeItem("user");
+      localStorage.removeItem("accessToken");
+      
+      // Call logout API
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER}/api/v1/users/logout`,
+        {}, // empty body
+        {
+          withCredentials: true, // sends cookies
+        }
+      );
+      
+      console.log("Admin logout successful");
+      
+      // Redirect to login page
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Admin logout failed:", error);
+      // Even if API call fails, redirect to login
+      window.location.href = "/login";
+    }
+  };
+  
   const links = [
     {
       label: "Dashboard",
@@ -62,8 +91,9 @@ export function SidebarAdmin({ children }) {
     },
     {
       label: "Logout",
-      href: "/logout",
-      icon: <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700" />,
+      href: "#",
+      onClick: handleLogout,
+      icon: <FaSignOutAlt className="h-5 w-5 shrink-0 text-neutral-700" />,
     },
   ];
 

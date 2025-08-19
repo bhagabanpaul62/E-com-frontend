@@ -37,17 +37,29 @@ const Login = () => {
       if (res?.data?.data?.accessToken) {
         localStorage.setItem("accessToken", res.data.data.accessToken);
       }
-
+      
       // Save user data in localStorage
       if (res?.data?.data?.user) {
-        localStorage.setItem("user", JSON.stringify(res.data.data.user));
+        const userData = res.data.data.user;
+        localStorage.setItem("user", JSON.stringify(userData));
+        
+        // Set a specific admin flag for easier checking
+        if (userData.isAdmin) {
+          localStorage.setItem("isAdmin", "true");
+          console.log("Admin login successful, storing admin flag");
+        }
       }
 
       const isAdmin = res?.data?.data?.user?.isAdmin;
 
       if (isAdmin) {
-        // Force a hard refresh to ensure cookies are properly set
-        window.location.href = "/admin";
+        // For admin users, add a delay to ensure cookies are properly set
+        setLoading(true);
+        setErrorMsg("");
+        setTimeout(() => {
+          // Force a hard refresh to ensure cookies are properly set
+          window.location.href = "/admin";
+        }, 1000);
       } else {
         window.location.href = "/";
       }
