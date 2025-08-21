@@ -2,6 +2,7 @@
 import Banner from "@/components/user/banner";
 import CategoryWithImage from "@/components/user/categoryWithImage";
 import axios from "axios";
+import CategoryWiseProduct from "@/components/user/categoryWiseProduct";
 import Link from "next/link";
 
 export default function Home() {
@@ -24,6 +25,7 @@ export default function Home() {
     <div>
       <Banner/>
       <CategoryWithImage/>
+      <CategoryWiseProduct/>
     </div>
   );
 }

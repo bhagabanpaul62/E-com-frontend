@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { SidebarAdmin } from "@/components/admin/SidebarAdmin";
 import AdminAuthFallback from "@/components/admin/AdminAuthFallback";
 
@@ -19,7 +19,7 @@ export default function AdminLayoutClient({ children }) {
           setLoading(false);
           return;
         }
-        
+
         // Then check user object
         const storedUser = localStorage.getItem("user");
         if (storedUser) {

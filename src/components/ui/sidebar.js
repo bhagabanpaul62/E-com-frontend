@@ -119,14 +119,14 @@ export const MobileSidebar = ({ className, children, ...props }) => {
 
 export const SidebarLink = ({ link, className, ...props }) => {
   const { open, animate } = useSidebar();
-  
+
   const handleClick = (e) => {
     if (link.onClick) {
       e.preventDefault();
       link.onClick(e);
     }
   };
-  
+
   return (
     <a
       href={link.href}

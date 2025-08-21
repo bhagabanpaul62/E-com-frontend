@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function AdminAuthFallback() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  
+
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
@@ -17,7 +17,7 @@ export default function AdminAuthFallback() {
           setLoading(false);
           return;
         }
-        
+
         // Then check if we have admin user data in localStorage
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
@@ -30,29 +30,32 @@ export default function AdminAuthFallback() {
             return;
           }
         }
-        
+
         // If no admin in localStorage, check for token
         const token = localStorage.getItem("accessToken");
         if (!token) {
           setLoading(false);
           return; // No token, not an admin
         }
-        
+
         console.log("Token found, validating admin status...");
-        
+
         // Validate token and check admin status
-        const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/v1/users/validate-token`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          credentials: 'include'
-        });
-        
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_SERVER}/api/v1/users/validate-token`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            credentials: "include",
+          }
+        );
+
         if (response.ok) {
           const data = await response.json();
           console.log("Token validation response:", data);
-          
+
           if (data.data?.user?.isAdmin) {
             // Store user data for future checks
             localStorage.setItem("user", JSON.stringify(data.data.user));
@@ -72,7 +75,7 @@ export default function AdminAuthFallback() {
 
     checkAdminStatus();
   }, []);
-  
+
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center h-screen">
@@ -81,7 +84,7 @@ export default function AdminAuthFallback() {
       </div>
     );
   }
-  
+
   if (!isAdmin) {
     return (
       <main className="flex flex-col justify-center items-center h-screen text-xl text-red-600 gap-8">
@@ -100,6 +103,6 @@ export default function AdminAuthFallback() {
       </main>
     );
   }
-  
+
   return null; // If admin, render nothing and allow the layout to proceed
 }

@@ -25,7 +25,7 @@ export function SidebarAdmin({ children }) {
       localStorage.removeItem("isAdmin");
       localStorage.removeItem("user");
       localStorage.removeItem("accessToken");
-      
+
       // Call logout API
       await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER}/api/v1/users/logout`,
@@ -34,9 +34,9 @@ export function SidebarAdmin({ children }) {
           withCredentials: true, // sends cookies
         }
       );
-      
+
       console.log("Admin logout successful");
-      
+
       // Redirect to login page
       window.location.href = "/login";
     } catch (error) {
@@ -45,7 +45,7 @@ export function SidebarAdmin({ children }) {
       window.location.href = "/login";
     }
   };
-  
+
   const links = [
     {
       label: "Dashboard",

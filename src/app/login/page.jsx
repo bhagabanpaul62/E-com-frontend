@@ -37,12 +37,12 @@ const Login = () => {
       if (res?.data?.data?.accessToken) {
         localStorage.setItem("accessToken", res.data.data.accessToken);
       }
-      
+
       // Save user data in localStorage
       if (res?.data?.data?.user) {
         const userData = res.data.data.user;
         localStorage.setItem("user", JSON.stringify(userData));
-        
+
         // Set a specific admin flag for easier checking
         if (userData.isAdmin) {
           localStorage.setItem("isAdmin", "true");
