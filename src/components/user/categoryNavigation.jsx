@@ -261,17 +261,29 @@ function CategoryNavigation() {
   return (
     <nav className="w-full bg-white shadow-sm sticky top-14 sm:top-16 z-40">
       {loading ? (
-        // Loading state
+        // Loading state - RESPONSIVE
         <div className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between h-12">
-              <div className="flex items-center space-x-8">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4">
+            {/* Mobile Loading */}
+            <div className="block sm:hidden">
+              <div className="flex items-center space-x-3 py-3 overflow-x-auto">
+                {[...Array(8)].map((_, index) => (
+                  <div key={index} className="flex-shrink-0">
+                    <div className="h-6 w-16 bg-gray-200 rounded-full animate-pulse"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Desktop Loading */}
+            <div className="hidden sm:flex items-center justify-between h-12">
+              <div className="flex items-center space-x-2 md:space-x-4 lg:space-x-6 xl:space-x-8">
                 {[...Array(6)].map((_, index) => (
                   <div
                     key={index}
                     className="flex items-center space-x-1 py-3 px-2"
                   >
-                    <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-3 sm:h-4 w-16 sm:w-20 bg-gray-200 rounded animate-pulse"></div>
                   </div>
                 ))}
               </div>
@@ -279,11 +291,11 @@ function CategoryNavigation() {
           </div>
         </div>
       ) : category.length === 0 ? (
-        // Empty state
+        // No categories state - RESPONSIVE
         <div className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-center h-12">
-              <div className="text-gray-500 text-sm">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4">
+            <div className="flex items-center justify-center h-10 sm:h-12">
+              <div className="text-xs sm:text-sm text-gray-500">
                 No categories available
               </div>
             </div>
@@ -298,12 +310,12 @@ function CategoryNavigation() {
             // Simple responsive categories display
             <div className="bg-white border-b border-gray-200 shadow-sm">
               <div className="max-w-7xl mx-auto px-2 sm:px-4">
-                {/* Mobile: Horizontal scrollable categories */}
-                <div className="sm:hidden">
-                  <div className="flex items-center space-x-3 py-2 overflow-x-auto scrollbar-hide">
+                {/* Mobile: Horizontal scrollable categories - ALWAYS VISIBLE */}
+                <div className="block sm:hidden">
+                  <div className="flex items-center space-x-3 py-3 overflow-x-auto scrollbar-hide">
                     {category.slice(0, 12).map((cat) => (
                       <div key={cat._id} className="flex-shrink-0">
-                        <span className="inline-block px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-full whitespace-nowrap hover:bg-blue-100 hover:text-blue-600 transition-colors cursor-pointer">
+                        <span className="inline-block px-3 py-2 text-xs font-medium text-gray-700 bg-gray-100 rounded-full whitespace-nowrap hover:bg-blue-100 hover:text-blue-600 transition-colors cursor-pointer">
                           {cat.name}
                         </span>
                       </div>

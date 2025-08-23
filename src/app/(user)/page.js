@@ -5,7 +5,7 @@ import Banner from "@/components/user/banner";
 import CategoryShowcase from "@/components/user/CategoryShowcase";
 import DealsOfTheDay from "@/components/user/DealsOfTheDay";
 import TrendingSection from "@/components/user/TrendingSection";
-import BrandsShowcase from "@/components/user/BrandsShowcase";
+
 import ProductGrid from "@/components/user/ProductGrid";
 
 export default function Home() {
@@ -138,12 +138,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Brands Section */}
-        <div className="bg-white mt-2 sm:mt-3 border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
-            <BrandsShowcase products={products} />
-          </div>
-        </div>
+        
 
         {/* Category-wise Products */}
         <div className="space-y-2 sm:space-y-3 mt-2 sm:mt-3">

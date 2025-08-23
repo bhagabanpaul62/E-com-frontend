@@ -7,7 +7,7 @@ import { FaArrowRight } from "react-icons/fa";
 const CategoryShowcase = ({ categories = [] }) => {
   if (categories.length === 0) return null;
 
-  return (
+   return (
     <div className="bg-white">
       <div className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">

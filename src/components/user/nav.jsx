@@ -217,7 +217,7 @@ export default function Nav({ user }) {
           <div
             onMouseEnter={handelMouseEnter}
             onMouseLeave={() => setEnterMouse(false)}
-            className="relative flex items-center gap-1 sm:gap-2 rounded-lg transition-colors duration-200 cursor-pointer px-2 sm:px-4 py-1 sm:py-2 hover:bg-blue-600 hover:text-white group"
+            className="relative flex items-center gap-1 sm:gap-2 rounded-lg transition-colors duration-200 cursor-pointer px-2 sm:px-4 py-1 sm:py-2 hover:bg-orange-500 hover:text-white group"
           >
             <FaRegUserCircle className="text-xl sm:text-2xl" />
             {Login ? (
@@ -511,16 +511,21 @@ export default function Nav({ user }) {
                 <FaTimes className="text-gray-500" />
               </button>
             </div>
-            
+
             {/* Quick Search Suggestions */}
             <div className="mt-3">
               <p className="text-xs text-gray-600 mb-2">Popular Searches</p>
               <div className="flex flex-wrap gap-2">
-                {['Mobiles', 'Fashion', 'Electronics', 'Home', 'Books'].map((item) => (
-                  <span key={item} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full cursor-pointer hover:bg-gray-200 transition-colors">
-                    {item}
-                  </span>
-                ))}
+                {["Mobiles", "Fashion", "Electronics", "Home", "Books"].map(
+                  (item) => (
+                    <span
+                      key={item}
+                      className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full cursor-pointer hover:bg-gray-200 transition-colors"
+                    >
+                      {item}
+                    </span>
+                  )
+                )}
               </div>
             </div>
           </div>
@@ -531,7 +536,7 @@ export default function Nav({ user }) {
       {mobileMenuOpen && (
         <>
           {/* Backdrop */}
-          <div 
+          <div
             className="sm:hidden fixed inset-0 bg-black bg-opacity-50 z-30 mobile-backdrop fade-in"
             onClick={() => setMobileMenuOpen(false)}
           ></div>
@@ -548,9 +553,13 @@ export default function Nav({ user }) {
                   <div>
                     <p className="text-sm opacity-90">Hey!</p>
                     <p className="font-semibold">
-                      {Login ? "Login & Get Started" : 
-                        (user?.fullName || user?.name || localUser?.fullName || localUser?.name || "Welcome")
-                      }
+                      {Login
+                        ? "Login & Get Started"
+                        : user?.fullName ||
+                          user?.name ||
+                          localUser?.fullName ||
+                          localUser?.name ||
+                          "Welcome"}
                     </p>
                   </div>
                 </div>
@@ -564,7 +573,10 @@ export default function Nav({ user }) {
             </div>
 
             {/* Mobile Menu Content */}
-            <div className="flex-1 overflow-y-auto mobile-menu-scroll" style={{height: 'calc(100vh - 80px)'}}>
+            <div
+              className="flex-1 overflow-y-auto mobile-menu-scroll"
+              style={{ height: "calc(100vh - 80px)" }}
+            >
               {/* Quick Actions */}
               <div className="p-4 border-b border-gray-200">
                 <div className="grid grid-cols-2 gap-4">
