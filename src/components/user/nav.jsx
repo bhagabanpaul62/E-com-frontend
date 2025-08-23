@@ -537,12 +537,12 @@ export default function Nav({ user }) {
         <>
           {/* Backdrop */}
           <div
-            className="sm:hidden fixed inset-0 bg-black bg-opacity-50 z-30 mobile-backdrop fade-in"
+            className="sm:hidden fixed inset-0  bg-opacity-50 z-30 mobile-backdrop fade-in"
             onClick={() => setMobileMenuOpen(false)}
           ></div>
 
           {/* Mobile Menu Sidebar */}
-          <div className="sm:hidden fixed top-0 left-0 w-80 h-full bg-white z-40 slide-in-from-left shadow-2xl">
+          <div className="sm:hidden fixed top-13 left-0 w-80 h-full bg-white z-40 slide-in-from-left shadow-2xl">
             {/* Mobile Menu Header */}
             <div className="bg-blue-600 p-4 text-white">
               <div className="flex items-center justify-between">
