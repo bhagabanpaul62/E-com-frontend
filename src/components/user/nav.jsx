@@ -18,6 +18,20 @@ import {
   FaBell,
   FaQuestionCircle,
   FaDownload,
+  FaBars,
+  FaTimes,
+  FaHome,
+  FaTags,
+  FaPercent,
+  FaStore,
+  FaHeadset,
+  FaChevronRight,
+  FaMapMarkerAlt,
+  FaTruck,
+  FaCog,
+  FaMoon,
+  FaSun,
+  FaLanguage,
 } from "react-icons/fa";
 
 export default function Nav({ user }) {
@@ -25,6 +39,8 @@ export default function Nav({ user }) {
   const [cartHover, setCartHover] = useState(false);
   const [Login, setLogin] = useState(false);
   const [localUser, setLocalUser] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   useEffect(() => {
     // First check if we have a server-provided user
@@ -94,6 +110,24 @@ export default function Nav({ user }) {
           }
         }
 
+        @keyframes slideInFromLeft {
+          from {
+            transform: translateX(-100%);
+          }
+          to {
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
         .animate-in {
           animation: slideInFromTop 0.2s ease-out;
         }
@@ -101,8 +135,44 @@ export default function Nav({ user }) {
         .slide-in-from-top-2 {
           animation-duration: 0.2s;
         }
+
+        .slide-in-from-left {
+          animation: slideInFromLeft 0.3s ease-out;
+        }
+
+        .fade-in {
+          animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Mobile menu backdrop */
+        .mobile-backdrop {
+          backdrop-filter: blur(2px);
+        }
+
+        /* Hide scrollbar for mobile menu */
+        .mobile-menu-scroll::-webkit-scrollbar {
+          display: none;
+        }
+        .mobile-menu-scroll {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
       `}</style>
       <div className="fixed top-0 left-0 w-full h-14 sm:h-16 bg-white border-b shadow-sm flex items-center justify-between px-3 sm:px-4 md:px-8 lg:px-16 z-50">
+        {/* Mobile Hamburger Menu */}
+        <div className="sm:hidden">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            {mobileMenuOpen ? (
+              <FaTimes className="text-xl text-gray-700" />
+            ) : (
+              <FaBars className="text-xl text-gray-700" />
+            )}
+          </button>
+        </div>
+
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
@@ -115,7 +185,7 @@ export default function Nav({ user }) {
           />
         </Link>
 
-        {/* Search Bar */}
+        {/* Desktop Search Bar */}
         <div className="hidden sm:flex items-center bg-gray-100 rounded-lg flex-1 max-w-md lg:max-w-lg xl:max-w-xl h-8 sm:h-9 md:h-10 px-3 mx-4">
           <IoIosSearch className="text-gray-500 text-lg sm:text-xl mr-2" />
           <input
@@ -125,13 +195,24 @@ export default function Nav({ user }) {
           />
         </div>
 
-        {/* Mobile Search Icon */}
-        <div className="sm:hidden">
-          <IoIosSearch className="text-gray-600 text-xl" />
+        {/* Mobile Right Icons */}
+        <div className="sm:hidden flex items-center gap-3">
+          <button
+            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+            className="p-2"
+          >
+            <IoIosSearch className="text-gray-600 text-xl" />
+          </button>
+          <div className="relative">
+            <FaShoppingCart className="text-xl text-gray-600" />
+            <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
+              3
+            </span>
+          </div>
         </div>
 
-        {/* Right Side Icons */}
-        <div className="flex items-center gap-2 sm:gap-4 lg:gap-8 text-sm sm:text-base font-medium">
+        {/* Desktop Right Side Icons */}
+        <div className="hidden sm:flex items-center gap-2 sm:gap-4 lg:gap-8 text-sm sm:text-base font-medium">
           {/* Login */}
           <div
             onMouseEnter={handelMouseEnter}
@@ -410,6 +491,260 @@ export default function Nav({ user }) {
           </div>
         </div>
       </div>
+
+      {/* Mobile Search Overlay */}
+      {mobileSearchOpen && (
+        <div className="sm:hidden fixed top-14 left-0 w-full bg-white border-b shadow-lg z-40 slide-in-from-top-2">
+          <div className="p-4">
+            <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-3">
+              <IoIosSearch className="text-blue-600 text-xl mr-3" />
+              <input
+                type="text"
+                className="w-full bg-transparent text-black text-base outline-none placeholder:text-gray-500"
+                placeholder="Search for Products, Brands and More"
+                autoFocus
+              />
+              <button
+                onClick={() => setMobileSearchOpen(false)}
+                className="ml-2 p-1 hover:bg-blue-100 rounded-full transition-colors"
+              >
+                <FaTimes className="text-gray-500" />
+              </button>
+            </div>
+            
+            {/* Quick Search Suggestions */}
+            <div className="mt-3">
+              <p className="text-xs text-gray-600 mb-2">Popular Searches</p>
+              <div className="flex flex-wrap gap-2">
+                {['Mobiles', 'Fashion', 'Electronics', 'Home', 'Books'].map((item) => (
+                  <span key={item} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full cursor-pointer hover:bg-gray-200 transition-colors">
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="sm:hidden fixed inset-0 bg-black bg-opacity-50 z-30 mobile-backdrop fade-in"
+            onClick={() => setMobileMenuOpen(false)}
+          ></div>
+
+          {/* Mobile Menu Sidebar */}
+          <div className="sm:hidden fixed top-0 left-0 w-80 h-full bg-white z-40 slide-in-from-left shadow-2xl">
+            {/* Mobile Menu Header */}
+            <div className="bg-blue-600 p-4 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                    <FaUser className="text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm opacity-90">Hey!</p>
+                    <p className="font-semibold">
+                      {Login ? "Login & Get Started" : 
+                        (user?.fullName || user?.name || localUser?.fullName || localUser?.name || "Welcome")
+                      }
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
+                >
+                  <FaTimes className="text-white" />
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Menu Content */}
+            <div className="flex-1 overflow-y-auto mobile-menu-scroll" style={{height: 'calc(100vh - 80px)'}}>
+              {/* Quick Actions */}
+              <div className="p-4 border-b border-gray-200">
+                <div className="grid grid-cols-2 gap-4">
+                  <Link
+                    href="/"
+                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <FaHome className="text-blue-600 text-xl mb-2" />
+                    <span className="text-sm font-medium">Home</span>
+                  </Link>
+                  <Link
+                    href="/categories"
+                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <FaTags className="text-green-600 text-xl mb-2" />
+                    <span className="text-sm font-medium">Categories</span>
+                  </Link>
+                  <Link
+                    href="/deals"
+                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <FaPercent className="text-red-600 text-xl mb-2" />
+                    <span className="text-sm font-medium">Deals</span>
+                  </Link>
+                  <Link
+                    href="/stores"
+                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <FaStore className="text-purple-600 text-xl mb-2" />
+                    <span className="text-sm font-medium">Stores</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Menu Items */}
+              <div className="py-2">
+                {Login ? (
+                  <div className="px-4 py-3">
+                    <Link
+                      href="/login"
+                      className="block w-full text-center px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors mb-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Login & Sign Up
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <Link
+                      href="/profile"
+                      className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <FaUser className="text-gray-600" />
+                        <span className="font-medium">My Profile</span>
+                      </div>
+                      <FaChevronRight className="text-gray-400 text-sm" />
+                    </Link>
+                    <Link
+                      href="/orders"
+                      className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <FaBoxOpen className="text-gray-600" />
+                        <span className="font-medium">Orders</span>
+                      </div>
+                      <FaChevronRight className="text-gray-400 text-sm" />
+                    </Link>
+                    <Link
+                      href="/wishlist"
+                      className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <FaHeart className="text-gray-600" />
+                        <span className="font-medium">Wishlist</span>
+                      </div>
+                      <FaChevronRight className="text-gray-400 text-sm" />
+                    </Link>
+                  </div>
+                )}
+
+                <div className="border-t border-gray-200 mt-2 pt-2">
+                  <Link
+                    href="/coupons"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <FaTicketAlt className="text-gray-600" />
+                      <span className="font-medium">Coupons</span>
+                    </div>
+                    <FaChevronRight className="text-gray-400 text-sm" />
+                  </Link>
+                  <Link
+                    href="/gift-cards"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <FaGift className="text-gray-600" />
+                      <span className="font-medium">Gift Cards</span>
+                    </div>
+                    <FaChevronRight className="text-gray-400 text-sm" />
+                  </Link>
+                  <Link
+                    href="/notifications"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <FaBell className="text-gray-600" />
+                      <span className="font-medium">Notifications</span>
+                    </div>
+                    <FaChevronRight className="text-gray-400 text-sm" />
+                  </Link>
+                </div>
+
+                <div className="border-t border-gray-200 mt-2 pt-2">
+                  <Link
+                    href="/help"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <FaHeadset className="text-gray-600" />
+                      <span className="font-medium">Help Center</span>
+                    </div>
+                    <FaChevronRight className="text-gray-400 text-sm" />
+                  </Link>
+                  <Link
+                    href="/legal"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <FaQuestionCircle className="text-gray-600" />
+                      <span className="font-medium">Legal</span>
+                    </div>
+                    <FaChevronRight className="text-gray-400 text-sm" />
+                  </Link>
+                </div>
+
+                {!Login && (
+                  <div className="border-t border-gray-200 mt-2 pt-2">
+                    <button
+                      onClick={() => {
+                        LogOut();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="flex items-center w-full px-4 py-3 hover:bg-red-50 transition-colors text-red-600"
+                    >
+                      <FaSignOutAlt className="mr-3" />
+                      <span className="font-medium">Logout</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Menu Footer */}
+            <div className="border-t border-gray-200 p-4">
+              <Link
+                href="/download"
+                className="flex items-center justify-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <FaDownload />
+                <span className="font-medium">Download App</span>
+              </Link>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }
