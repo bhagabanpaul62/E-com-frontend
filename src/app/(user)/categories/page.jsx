@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FaSearch, FaGrid, FaList, FaArrowLeft } from "react-icons/fa";
+import { FaSearch, FaTh, FaList, FaArrowLeft } from "react-icons/fa";
 
 const CategoriesPage = () => {
   const [categories, setCategories] = useState([]);
@@ -24,13 +24,15 @@ const CategoriesPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/category/get");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER}/users/category`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch categories");
       }
       const data = await response.json();
       if (data.success) {
-        setCategories(data.data);
+        setCategories(data.data.data || []);
       } else {
         setError("Failed to load categories");
       }
@@ -196,7 +198,7 @@ const CategoriesPage = () => {
                       : "text-gray-600 hover:text-gray-900"
                   }`}
                 >
-                  <FaGrid />
+                  <FaTh />
                 </button>
                 <button
                   onClick={() => handleViewTypeChange("list")}

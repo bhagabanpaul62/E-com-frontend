@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { FaArrowLeft, FaGrid, FaList, FaFilter, FaSort } from "react-icons/fa";
+import { FaArrowLeft, FaTh, FaList, FaFilter, FaSort } from "react-icons/fa";
 
 const CategoryPage = () => {
   const params = useParams();
   const categoryId = params.id;
-  
+
   const [category, setCategory] = useState(null);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -33,22 +33,22 @@ const CategoryPage = () => {
   const fetchCategoryData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch category details
       const categoryResponse = await fetch(
-        `http://localhost:8000/api/v1/category/get/${categoryId}`
+        `${process.env.NEXT_PUBLIC_SERVER}/users/category/${categoryId}`
       );
       if (!categoryResponse.ok) {
         throw new Error("Category not found");
       }
       const categoryData = await categoryResponse.json();
       if (categoryData.success) {
-        setCategory(categoryData.data);
+        setCategory(categoryData.data.data);
       }
 
       // Fetch products for this category
       const productsResponse = await fetch(
-        `http://localhost:8000/api/v1/product/get?category=${categoryId}`
+        `${process.env.NEXT_PUBLIC_SERVER}/users/product?category=${categoryId}`
       );
       if (productsResponse.ok) {
         const productsData = await productsResponse.json();
@@ -59,12 +59,12 @@ const CategoryPage = () => {
 
       // Fetch subcategories
       const categoriesResponse = await fetch(
-        "http://localhost:8000/api/v1/category/get"
+        `${process.env.NEXT_PUBLIC_SERVER}/users/category`
       );
       if (categoriesResponse.ok) {
         const categoriesData = await categoriesResponse.json();
         if (categoriesData.success) {
-          const subs = categoriesData.data.filter(
+          const subs = (categoriesData.data.data || []).filter(
             (cat) => cat.parentId === categoryId
           );
           setSubcategories(subs);
@@ -85,7 +85,8 @@ const CategoryPage = () => {
       filtered = filtered.filter((product) => {
         const price = product.price || 0;
         const min = priceRange.min === "" ? 0 : parseFloat(priceRange.min);
-        const max = priceRange.max === "" ? Infinity : parseFloat(priceRange.max);
+        const max =
+          priceRange.max === "" ? Infinity : parseFloat(priceRange.max);
         return price >= min && price <= max;
       });
     }
@@ -250,7 +251,7 @@ const CategoryPage = () => {
                       : "text-gray-600 hover:text-gray-900"
                   }`}
                 >
-                  <FaGrid />
+                  <FaTh />
                 </button>
                 <button
                   onClick={() => setViewType("list")}
