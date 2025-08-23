@@ -79,8 +79,8 @@ function Banner() {
 
   if (loading) {
     return (
-      <div className="w-full h-56 md:h-72 lg:h-96 bg-gray-200 animate-pulse flex items-center justify-center">
-        <p className="text-gray-500">Loading banners...</p>
+      <div className="w-full h-32 sm:h-40 md:h-56 lg:h-64 xl:h-80 bg-gray-200 animate-pulse flex items-center justify-center">
+        <p className="text-gray-500 text-sm sm:text-base">Loading banners...</p>
       </div>
     );
   }
@@ -91,7 +91,7 @@ function Banner() {
 
   return (
     <div
-      className="relative w-full overflow-hidden"
+      className="relative w-full overflow-hidden bg-white"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
@@ -100,7 +100,7 @@ function Banner() {
     >
       {/* Banner slides */}
       <div
-        className="flex transition-transform duration-500 ease-out h-48 sm:h-56 md:h-72 "
+        className="flex transition-transform duration-500 ease-out h-32 sm:h-40 md:h-56 lg:h-64 xl:h-80"
         style={{ transform: `translateX(-${current * 100}%)` }}
       >
         {banners.map((banner, index) => (
@@ -114,27 +114,31 @@ function Banner() {
         ))}
       </div>
 
-      {/* Navigation arrows */}
+      {/* Navigation arrows - Hidden on mobile */}
       <button
-        className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white/70 hover:bg-white text-gray-800 rounded-full p-2 shadow-md z-10 transition-all opacity-70 hover:opacity-100 hidden sm:block"
+        className="absolute top-1/2 left-2 sm:left-4 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-1.5 sm:p-2 shadow-lg z-10 transition-all opacity-0 sm:opacity-70 hover:opacity-100 hidden sm:block"
         onClick={prevSlide}
+        aria-label="Previous banner"
       >
-        <FaChevronLeft className="w-4 h-4" />
+        <FaChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
       </button>
       <button
-        className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white/70 hover:bg-white text-gray-800 rounded-full p-2 shadow-md z-10 transition-all opacity-70 hover:opacity-100 hidden sm:block"
+        className="absolute top-1/2 right-2 sm:right-4 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-1.5 sm:p-2 shadow-lg z-10 transition-all opacity-0 sm:opacity-70 hover:opacity-100 hidden sm:block"
         onClick={nextSlide}
+        aria-label="Next banner"
       >
-        <FaChevronRight className="w-4 h-4" />
+        <FaChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
       </button>
 
       {/* Dots indicator */}
-      <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+      <div className="absolute bottom-2 sm:bottom-3 left-0 right-0 flex justify-center gap-1 sm:gap-1.5">
         {banners.map((_, index) => (
           <button
             key={index}
-            className={`w-2 h-2 rounded-full transition-all ${
-              current === index ? "bg-white w-4" : "bg-white/50"
+            className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all ${
+              current === index
+                ? "bg-white w-3 sm:w-4"
+                : "bg-white/60 hover:bg-white/80"
             }`}
             onClick={() => goToSlide(index)}
             aria-label={`Go to slide ${index + 1}`}

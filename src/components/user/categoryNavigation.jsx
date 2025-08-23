@@ -14,18 +14,12 @@ function CategoryNavigation() {
   const GetCategory = async () => {
     try {
       setLoading(true);
-      console.log("🔄 Fetching categories...");
 
       const res = await axios.get(
         `${process.env.NEXT_PUBLIC_SERVER}/users/category`
       );
 
-      console.log("✅ Raw API Response:", res.data);
-      console.log("📊 Categories data:", res.data.data.data);
-
       const categoriesData = res.data.data.data || [];
-      console.log("🎯 Setting categories:", categoriesData);
-      console.log("📈 Number of categories:", categoriesData.length);
 
       setCategory(categoriesData);
     } catch (error) {
@@ -39,21 +33,8 @@ function CategoryNavigation() {
     GetCategory();
   }, []);
 
-  // Debug logging for category state changes
-  useEffect(() => {
-    console.log("🔄 Category state updated:", category);
-    console.log("📊 Category count:", category.length);
-    if (category.length > 0) {
-      console.log("📋 Sample category structure:", category[0]);
-    }
-  }, [category]);
-
   // Build Recursive Tree
   function buildCategoryTree(categories, parentId = null) {
-    console.log(
-      `🌳 Building tree for parentId: ${parentId}, total categories: ${categories.length}`
-    );
-
     const filteredCategories = categories.filter((cat) => {
       if (!cat.parentId && parentId === null) return true;
       if (cat.parentId && parentId !== null) {
@@ -62,11 +43,6 @@ function CategoryNavigation() {
       return false;
     });
 
-    console.log(
-      `🔍 Filtered categories for parentId ${parentId}:`,
-      filteredCategories.length
-    );
-
     return filteredCategories.map((cat) => ({
       ...cat,
       Children: buildCategoryTree(categories, cat._id),
@@ -74,15 +50,10 @@ function CategoryNavigation() {
   }
 
   const categoryTree = buildCategoryTree(category);
-  console.log("🌲 Final category tree:", categoryTree);
-  console.log("🎯 Tree length:", categoryTree.length);
 
   // Get featured categories (top 6)
   const featuredCategories = categoryTree.slice(0, 6);
   const moreCategories = categoryTree.slice(6);
-
-  console.log("⭐ Featured categories:", featuredCategories.length);
-  console.log("📚 More categories:", moreCategories.length);
 
   // Flipkart-style mega menu renderer
   const renderFlipkartMenu = (cats) => {
@@ -118,7 +89,7 @@ function CategoryNavigation() {
                   {cat.Children.length > 0 &&
                     isMenuOpen &&
                     hoveredCategoryId === cat._id && (
-                      <div className="absolute left-32 top-full w-screen max-w-5xl bg-white shadow-2xl border border-gray-200 z-50 mega-menu-enter">
+                      <div className="absolute left-32 top-12 w-screen max-w-5xl bg-white shadow-2xl border border-gray-200 z-50 mega-menu-enter">
                         <div className="flex">
                           {/* Left Side - Subcategories */}
                           <div className="w-1/4 bg-gray-50 p-6 border-r border-gray-200">
@@ -254,7 +225,7 @@ function CategoryNavigation() {
 
                 {/* More Categories Dropdown */}
                 {isMenuOpen && hoveredCategoryId === "more" && (
-                  <div className="absolute right-0 top-full mt-1 w-80 bg-white shadow-2xl border border-gray-200 rounded-lg z-50 mega-menu-enter">
+                  <div className="absolute right-0 top-9 mt-1 w-80 bg-white shadow-2xl border border-gray-200 rounded-lg z-50 mega-menu-enter">
                     <div className="p-4">
                       <h4 className="font-bold text-gray-800 mb-3">
                         All Categories
@@ -288,7 +259,7 @@ function CategoryNavigation() {
   };
 
   return (
-    <nav className="w-full bg-white shadow-sm sticky top-16 z-40">
+    <nav className="w-full bg-white shadow-sm sticky top-14 sm:top-16 z-40">
       {loading ? (
         // Loading state
         <div className="bg-white border-b border-gray-200 shadow-sm">
@@ -321,23 +292,45 @@ function CategoryNavigation() {
       ) : (
         // Normal state with categories
         <>
-         
-
           {categoryTree.length > 0 ? (
             renderFlipkartMenu(categoryTree)
           ) : (
-            // Fallback: Display raw categories if tree building fails
+            // Simple responsive categories display
             <div className="bg-white border-b border-gray-200 shadow-sm">
-              <div className="max-w-7xl mx-auto px-4">
-                <div className="flex items-center justify-between h-12">
-                  <div className="flex items-center space-x-8">
-                    {category.slice(0, 6).map((cat) => (
-                      <div key={cat._id} className="py-3 px-2">
-                        <span className="font-medium text-sm text-gray-700">
+              <div className="max-w-7xl mx-auto px-2 sm:px-4">
+                {/* Mobile: Horizontal scrollable categories */}
+                <div className="sm:hidden">
+                  <div className="flex items-center space-x-3 py-2 overflow-x-auto scrollbar-hide">
+                    {category.slice(0, 12).map((cat) => (
+                      <div key={cat._id} className="flex-shrink-0">
+                        <span className="inline-block px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-full whitespace-nowrap hover:bg-blue-100 hover:text-blue-600 transition-colors cursor-pointer">
                           {cat.name}
                         </span>
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* Desktop: Traditional navigation */}
+                <div className="hidden sm:flex items-center justify-between h-12">
+                  <div className="flex items-center space-x-2 md:space-x-4 lg:space-x-6 xl:space-x-8">
+                    {category.slice(0, 10).map((cat) => (
+                      <div
+                        key={cat._id}
+                        className="py-3 px-2 md:px-3 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <span className="font-medium text-xs md:text-sm text-gray-700 whitespace-nowrap">
+                          {cat.name}
+                        </span>
+                      </div>
+                    ))}
+                    {category.length > 10 && (
+                      <div className="py-3 px-2 md:px-3">
+                        <span className="font-medium text-xs md:text-sm text-blue-600 cursor-pointer hover:text-blue-800 transition-colors">
+                          More
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -379,6 +372,16 @@ function CategoryNavigation() {
 
         .overflow-y-auto::-webkit-scrollbar-thumb:hover {
           background: #a8a8a8;
+        }
+
+        /* Hide scrollbar for mobile category navigation */
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
 
         /* Hover effects for mega menu items */

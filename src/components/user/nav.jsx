@@ -102,42 +102,47 @@ export default function Nav({ user }) {
           animation-duration: 0.2s;
         }
       `}</style>
-      <div className="fixed top-0 left-0 w-full h-16 bg-white border-b shadow-sm flex items-center justify-between px-8 md:px-16 z-50">
+      <div className="fixed top-0 left-0 w-full h-14 sm:h-16 bg-white border-b shadow-sm flex items-center justify-between px-3 sm:px-4 md:px-8 lg:px-16 z-50">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center">
           <Image
             src="/Tajbee3.png"
             alt="Tajbee Logo"
-            width={130}
-            height={40}
-            style={{ width: "130px", height: "auto" }} // or set both in props
+            width={110}
+            height={35}
+            className="w-20 sm:w-24 md:w-28 lg:w-32 h-auto"
             priority
           />
         </Link>
 
         {/* Search Bar */}
-        <div className="hidden md:flex items-center bg-gray-100 rounded-lg w-[40vw] max-w-lg h-10 px-4">
-          <IoIosSearch className="text-gray-500 text-xl mr-2" />
+        <div className="hidden sm:flex items-center bg-gray-100 rounded-lg flex-1 max-w-md lg:max-w-lg xl:max-w-xl h-8 sm:h-9 md:h-10 px-3 mx-4">
+          <IoIosSearch className="text-gray-500 text-lg sm:text-xl mr-2" />
           <input
             type="text"
-            className="w-full h-full bg-transparent px-2 text-black text-base outline-none placeholder:text-gray-400"
+            className="w-full h-full bg-transparent px-1 sm:px-2 text-black text-sm sm:text-base outline-none placeholder:text-gray-400"
             placeholder="Search for Products, Brands and More"
           />
         </div>
 
+        {/* Mobile Search Icon */}
+        <div className="sm:hidden">
+          <IoIosSearch className="text-gray-600 text-xl" />
+        </div>
+
         {/* Right Side Icons */}
-        <div className="flex items-center gap-8 text-base font-medium">
+        <div className="flex items-center gap-2 sm:gap-4 lg:gap-8 text-sm sm:text-base font-medium">
           {/* Login */}
           <div
             onMouseEnter={handelMouseEnter}
             onMouseLeave={() => setEnterMouse(false)}
-            className="relative flex items-center gap-2 rounded-lg transition-colors duration-200 cursor-pointer px-4 py-2 hover:bg-amber-400 hover:text-white group"
+            className="relative flex items-center gap-1 sm:gap-2 rounded-lg transition-colors duration-200 cursor-pointer px-2 sm:px-4 py-1 sm:py-2 hover:bg-blue-600 hover:text-white group"
           >
-            <FaRegUserCircle className="text-2xl" />
+            <FaRegUserCircle className="text-xl sm:text-2xl" />
             {Login ? (
-              <span className="hidden sm:inline">Login</span>
+              <span className="hidden md:inline">Login</span>
             ) : (
-              <span className="hidden sm:inline">
+              <span className="hidden md:inline">
                 {user?.fullName ||
                   user?.name ||
                   localUser?.fullName ||
@@ -145,7 +150,7 @@ export default function Nav({ user }) {
                   "Account"}
               </span>
             )}
-            <FaChevronDown className="text-base text-gray-500 transition-transform duration-200 group-hover:rotate-180" />
+            <FaChevronDown className="hidden sm:inline text-xs sm:text-base text-gray-500 transition-transform duration-200 group-hover:rotate-180" />
             {enterMouse && (
               <div className="absolute top-10 right-0 w-80 bg-white border border-gray-200 shadow-2xl rounded-lg overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
                 {Login ? (
@@ -315,18 +320,18 @@ export default function Nav({ user }) {
 
           {/* Cart */}
           <div
-            className="relative flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg hover:bg-amber-100 transition-colors group"
+            className="relative flex items-center gap-1 sm:gap-2 cursor-pointer px-2 sm:px-4 py-1 sm:py-2 rounded-lg hover:bg-blue-100 transition-colors group"
             onMouseEnter={() => setCartHover(true)}
             onMouseLeave={() => setCartHover(false)}
           >
             <div className="relative">
-              <FaShoppingCart className="text-2xl" />
+              <FaShoppingCart className="text-xl sm:text-2xl" />
               {/* Cart Badge */}
-              <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 bg-orange-500 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
                 3
               </span>
             </div>
-            <span className="hidden sm:inline">Cart</span>
+            <span className="hidden md:inline">Cart</span>
 
             {/* Cart Dropdown */}
             {cartHover && (

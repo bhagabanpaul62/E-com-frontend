@@ -133,7 +133,7 @@ function CategoryWiseProduct() {
                       <div className="bg-white border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200">
                         <div className="aspect-square bg-muted/50 relative overflow-hidden">
                           <img
-                            src={product.mainImage || "/placeholder.svg"}
+                            src={product.mainImage || "/placeholder.jpg"}
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
@@ -232,7 +232,7 @@ function CategoryWiseProduct() {
                           <div className="bg-white border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200">
                             <div className="aspect-square bg-muted/50 relative overflow-hidden">
                               <img
-                                src={product.mainImage || "/placeholder.svg"}
+                                src={product.mainImage || "/placeholder.jpg"}
                                 alt={product.name}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               />
