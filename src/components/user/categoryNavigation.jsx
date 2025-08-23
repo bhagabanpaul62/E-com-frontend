@@ -59,8 +59,22 @@ function CategoryNavigation() {
   const renderFlipkartMenu = (cats) => {
     return (
       <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-12">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4">
+          {/* Mobile: Horizontal scrollable categories */}
+          <div className="block">
+            <div className="flex items-center space-x-3 py-3 overflow-x-auto scrollbar-hide">
+              {cats.slice(0, 12).map((cat) => (
+                <div key={cat._id} className="flex-shrink-0">
+                  <span className="inline-block px-3 py-2 text-xs font-medium text-gray-700 bg-gray-100 rounded-full whitespace-nowrap hover:bg-blue-100 hover:text-blue-600 transition-colors cursor-pointer">
+                    {cat.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop: Mega menu */}
+          <div className="hidden">
             {/* Featured Categories */}
             <div className="flex items-center space-x-8">
               {featuredCategories.map((cat) => (
