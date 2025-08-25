@@ -1,13 +1,12 @@
+// Moved from user/CategoryShowcase.jsx
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { FaArrowRight } from "react-icons/fa";
 
 const CategoryShowcase = ({ categories = [] }) => {
   if (categories.length === 0) return null;
-
-   return (
+  return (
     <div className="bg-white">
       <div className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
@@ -24,7 +23,6 @@ const CategoryShowcase = ({ categories = [] }) => {
           </Link>
         </div>
       </div>
-
       <div className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4">
         <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-2 sm:gap-3 lg:gap-4">
           {categories.slice(0, 12).map((category) => (

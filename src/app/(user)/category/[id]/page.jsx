@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { FaArrowLeft, FaTh, FaList, FaFilter, FaSort } from "react-icons/fa";
+import ProductCard from "@/components/user/product/ProductCard";
 
 const CategoryPage = () => {
   const params = useParams();
@@ -290,128 +290,27 @@ const CategoryPage = () => {
             {viewType === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
                 {filteredProducts.map((product) => (
-                  <Link
+                  <ProductCard
                     key={product._id}
-                    href={`/product/${product._id}`}
-                    className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 hover:border-blue-200"
-                  >
-                    <div className="aspect-square relative bg-gray-100">
-                      {product.images && product.images.length > 0 ? (
-                        <Image
-                          src={product.images[0]}
-                          alt={product.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-200"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                          <span className="text-2xl">📦</span>
-                        </div>
-                      )}
-                      {product.discount && product.discount > 0 && (
-                        <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
-                          -{product.discount}%
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 text-sm mb-2">
-                        {product.name}
-                      </h3>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          {product.discountedPrice ? (
-                            <>
-                              <span className="font-bold text-gray-900">
-                                ₹{product.discountedPrice}
-                              </span>
-                              <span className="text-xs text-gray-500 line-through">
-                                ₹{product.price}
-                              </span>
-                            </>
-                          ) : (
-                            <span className="font-bold text-gray-900">
-                              ₹{product.price || 0}
-                            </span>
-                          )}
-                        </div>
-                        {product.rating && (
-                          <div className="flex items-center space-x-1">
-                            <span className="text-xs text-yellow-600">★</span>
-                            <span className="text-xs text-gray-600">
-                              {product.rating}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
+                    product={product}
+                    view="grid"
+                    compact={true}
+                    showVariants={true}
+                    showTags={true}
+                  />
                 ))}
               </div>
             ) : (
               <div className="space-y-4">
                 {filteredProducts.map((product) => (
-                  <Link
+                  <ProductCard
                     key={product._id}
-                    href={`/product/${product._id}`}
-                    className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 hover:border-blue-200 block"
-                  >
-                    <div className="flex items-center p-4">
-                      <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 mr-4 relative">
-                        {product.images && product.images.length > 0 ? (
-                          <Image
-                            src={product.images[0]}
-                            alt={product.name}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                            <span className="text-xl">📦</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors mb-1">
-                          {product.name}
-                        </h3>
-                        {product.description && (
-                          <p className="text-sm text-gray-500 mb-2 line-clamp-2">
-                            {product.description}
-                          </p>
-                        )}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            {product.discountedPrice ? (
-                              <>
-                                <span className="font-bold text-gray-900">
-                                  ₹{product.discountedPrice}
-                                </span>
-                                <span className="text-sm text-gray-500 line-through">
-                                  ₹{product.price}
-                                </span>
-                                <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
-                                  {product.discount}% OFF
-                                </span>
-                              </>
-                            ) : (
-                              <span className="font-bold text-gray-900">
-                                ₹{product.price || 0}
-                              </span>
-                            )}
-                          </div>
-                          {product.rating && (
-                            <div className="flex items-center space-x-1">
-                              <span className="text-yellow-600">★</span>
-                              <span className="text-sm text-gray-600">
-                                {product.rating}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
+                    product={product}
+                    view="list"
+                    compact={false}
+                    showVariants={true}
+                    showTags={true}
+                  />
                 ))}
               </div>
             )}

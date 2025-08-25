@@ -1,12 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Banner from "@/components/user/banner";
-import CategoryShowcase from "@/components/user/CategoryShowcase";
-import DealsOfTheDay from "@/components/user/DealsOfTheDay";
-import TrendingSection from "@/components/user/TrendingSection";
-
-import ProductGrid from "@/components/user/ProductGrid";
+import Banner from "@/components/user/home/Banner";
+import DealsOfTheDay from "@/components/user/home/DealsOfTheDay";
+import TrendingSection from "@/components/user/home/TrendingSection";
+import CategoryShowcase from "@/components/user/category/CategoryShowcase";
+import ProductGrid from "@/components/user/product/ProductGrid";
 
 export default function Home() {
   const [categories, setCategories] = useState([]);
@@ -137,8 +136,6 @@ export default function Home() {
             <TrendingSection products={products} />
           </div>
         </div>
-
-        
 
         {/* Category-wise Products */}
         <div className="space-y-2 sm:space-y-3 mt-2 sm:mt-3">

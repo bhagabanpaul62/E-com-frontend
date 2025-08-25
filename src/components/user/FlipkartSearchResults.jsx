@@ -10,6 +10,7 @@ import {
   FaChevronDown,
   FaSearch,
 } from "react-icons/fa";
+import ProductCard from "@/components/user/product/ProductCard";
 
 const FlipkartSearchResults = ({ searchQuery, products = [] }) => {
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -218,67 +219,14 @@ const FlipkartSearchResults = ({ searchQuery, products = [] }) => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredProducts.map((product) => (
-                  <div
+                  <ProductCard
                     key={product._id}
-                    className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow group"
-                  >
-                    <Link href={`/product/${product._id}`}>
-                      <div className="relative">
-                        <div className="aspect-square bg-muted/50 relative overflow-hidden">
-                          <img
-                            src={product.mainImage || "/placeholder.svg"}
-                            alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                          {product.discount > 0 && (
-                            <div className="absolute top-3 left-3 bg-chart-1 text-white text-xs px-2 py-1 rounded">
-                              {product.discount}% OFF
-                            </div>
-                          )}
-                          <button className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:bg-red-50 transition-colors">
-                            <FaHeart className="text-muted-foreground hover:text-red-500 text-sm" />
-                          </button>
-                        </div>
-
-                        <div className="p-4">
-                          <h3 className="font-medium text-foreground line-clamp-2 mb-2">
-                            {product.name}
-                          </h3>
-
-                          {product.averageRating > 0 && (
-                            <div className="flex items-center space-x-2 mb-2">
-                              <div className="flex items-center space-x-1 bg-chart-1 text-white px-2 py-1 rounded text-xs">
-                                <span>{product.averageRating.toFixed(1)}</span>
-                                <FaStar className="text-xs" />
-                              </div>
-                              <span className="text-xs text-muted-foreground">
-                                ({product.totalReviews || 0} reviews)
-                              </span>
-                            </div>
-                          )}
-
-                          <div className="space-y-1">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-xl font-semibold text-foreground">
-                                ₹{product.price?.toLocaleString()}
-                              </span>
-                              {product.mrpPrice > product.price && (
-                                <span className="text-sm text-muted-foreground line-through">
-                                  ₹{product.mrpPrice?.toLocaleString()}
-                                </span>
-                              )}
-                            </div>
-
-                            {product.brand && (
-                              <p className="text-sm text-muted-foreground">
-                                by {product.brand}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
+                    product={product}
+                    view="grid"
+                    compact={false}
+                    showVariants={true}
+                    showTags={true}
+                  />
                 ))}
               </div>
             )}

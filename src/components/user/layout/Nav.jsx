@@ -1,3 +1,4 @@
+// Moved from user/nav.jsx
 "use client";
 import Image from "next/image";
 import { IoIosSearch } from "react-icons/io";
@@ -43,13 +44,11 @@ export default function Nav({ user }) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   useEffect(() => {
-    // First check if we have a server-provided user
     if (user && user.name) {
       setLogin(false);
       return;
     }
 
-    // If no server user, check localStorage
     try {
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
@@ -72,15 +71,14 @@ export default function Nav({ user }) {
 
   const LogOut = async () => {
     try {
-      // Clear localStorage first
       localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
 
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER}/users/logout`,
-        {}, // empty body
+        {},
         {
-          withCredentials: true, // 🔑 this sends cookies
+          withCredentials: true,
         }
       );
       console.log("Logout successful:", res.data);
@@ -89,7 +87,6 @@ export default function Nav({ user }) {
       window.location.reload();
     } catch (error) {
       console.error("Logout failed:", error);
-      // Even if API call fails, ensure local state is cleared
       setLogin(true);
       setLocalUser(null);
       window.location.reload();
@@ -144,12 +141,10 @@ export default function Nav({ user }) {
           animation: fadeIn 0.3s ease-out;
         }
 
-        /* Mobile menu backdrop */
         .mobile-backdrop {
           backdrop-filter: blur(2px);
         }
 
-        /* Hide scrollbar for mobile menu */
         .mobile-menu-scroll::-webkit-scrollbar {
           display: none;
         }
@@ -159,7 +154,6 @@ export default function Nav({ user }) {
         }
       `}</style>
       <div className="fixed top-0 left-0 w-full h-14 sm:h-16 bg-white border-b shadow-sm flex items-center justify-between px-3 sm:px-4 md:px-8 lg:px-16 z-50">
-        {/* Mobile Hamburger Menu */}
         <div className="sm:hidden">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -173,7 +167,6 @@ export default function Nav({ user }) {
           </button>
         </div>
 
-        {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
             src="/Tajbee3.png"
@@ -185,7 +178,6 @@ export default function Nav({ user }) {
           />
         </Link>
 
-        {/* Desktop Search Bar */}
         <div className="hidden sm:flex items-center bg-gray-100 rounded-lg flex-1 max-w-md lg:max-w-lg xl:max-w-xl h-8 sm:h-9 md:h-10 px-3 mx-4">
           <IoIosSearch className="text-gray-500 text-lg sm:text-xl mr-2" />
           <input
@@ -195,7 +187,6 @@ export default function Nav({ user }) {
           />
         </div>
 
-        {/* Mobile Right Icons */}
         <div className="sm:hidden flex items-center gap-3">
           <button
             onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
@@ -211,9 +202,7 @@ export default function Nav({ user }) {
           </div>
         </div>
 
-        {/* Desktop Right Side Icons */}
         <div className="hidden sm:flex items-center gap-2 sm:gap-4 lg:gap-8 text-sm sm:text-base font-medium">
-          {/* Login */}
           <div
             onMouseEnter={handelMouseEnter}
             onMouseLeave={() => setEnterMouse(false)}
@@ -235,7 +224,6 @@ export default function Nav({ user }) {
             {enterMouse && (
               <div className="absolute top-10 right-0 w-80 bg-white border border-gray-200 shadow-2xl rounded-lg overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
                 {Login ? (
-                  // Login Section
                   <div className="p-4">
                     <div className="text-center mb-4">
                       <h3 className="text-lg font-semibold text-gray-800 mb-2">
@@ -280,9 +268,7 @@ export default function Nav({ user }) {
                     </div>
                   </div>
                 ) : (
-                  // User Account Section
                   <div>
-                    {/* User Header */}
                     <div className="bg-gradient-to-r from-amber-400 to-amber-500 p-4 text-white">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
@@ -305,9 +291,7 @@ export default function Nav({ user }) {
                       </div>
                     </div>
 
-                    {/* Menu Items */}
                     <div className="p-2">
-                      {/* Primary Actions */}
                       <div className="space-y-1 mb-3">
                         <Link
                           href="/account"
@@ -332,7 +316,6 @@ export default function Nav({ user }) {
                         </Link>
                       </div>
 
-                      {/* Secondary Actions */}
                       <div className="border-t border-gray-200 pt-3 space-y-1 mb-3">
                         <Link
                           href="/rewards"
@@ -364,7 +347,6 @@ export default function Nav({ user }) {
                         </Link>
                       </div>
 
-                      {/* Help & Support */}
                       <div className="border-t border-gray-200 pt-3 space-y-1 mb-3">
                         <Link
                           href="/help"
@@ -382,7 +364,6 @@ export default function Nav({ user }) {
                         </Link>
                       </div>
 
-                      {/* Logout */}
                       <div className="border-t border-gray-200 pt-3">
                         <button
                           className="flex items-center gap-3 w-full px-3 py-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors group"
@@ -399,363 +380,182 @@ export default function Nav({ user }) {
             )}
           </div>
 
-          {/* Cart */}
           <div
-            className="relative flex items-center gap-1 sm:gap-2 cursor-pointer px-2 sm:px-4 py-1 sm:py-2 rounded-lg hover:bg-blue-100 transition-colors group"
             onMouseEnter={() => setCartHover(true)}
             onMouseLeave={() => setCartHover(false)}
+            className="relative flex items-center gap-1 sm:gap-2 rounded-lg transition-colors duration-200 cursor-pointer px-2 sm:px-4 py-1 sm:py-2 hover:bg-orange-500 hover:text-white group"
           >
-            <div className="relative">
-              <FaShoppingCart className="text-xl sm:text-2xl" />
-              {/* Cart Badge */}
-              <span className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 bg-orange-500 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
-                3
-              </span>
-            </div>
+            <FaShoppingCart className="text-xl sm:text-2xl" />
             <span className="hidden md:inline">Cart</span>
-
-            {/* Cart Dropdown */}
-            {cartHover && (
-              <div className="absolute top-10 right-0 w-80 bg-white border border-gray-200 shadow-2xl rounded-lg overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      My Cart
-                    </h3>
-                    <span className="text-sm text-gray-500">3 items</span>
-                  </div>
-
-                  {/* Cart Items */}
-                  <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
-                    {/* Sample Cart Item */}
-                    <div className="flex items-center gap-3 p-2 border rounded-lg">
-                      <div className="w-12 h-12 bg-gray-200 rounded-md"></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-800 truncate">
-                          Product Name
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Size: M, Color: Blue
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-sm font-semibold text-amber-600">
-                            ₹999
-                          </span>
-                          <span className="text-xs text-gray-400 line-through">
-                            ₹1299
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-center gap-1">
-                        <button className="w-6 h-6 bg-gray-100 rounded text-xs font-bold">
-                          +
-                        </button>
-                        <span className="text-sm">1</span>
-                        <button className="w-6 h-6 bg-gray-100 rounded text-xs font-bold">
-                          -
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* More items can be added here */}
-                  </div>
-
-                  {/* Cart Summary */}
-                  <div className="border-t pt-4">
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="font-semibold text-gray-800">
-                        Total:
-                      </span>
-                      <span className="font-bold text-lg text-amber-600">
-                        ₹2,997
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      <Link
-                        href="/cart"
-                        className="block w-full text-center px-4 py-2 border border-amber-400 text-amber-600 font-semibold rounded-lg hover:bg-amber-50 transition-colors"
-                      >
-                        View Cart
-                      </Link>
-                      <Link
-                        href="/checkout"
-                        className="block w-full text-center px-4 py-2 bg-amber-400 text-white font-semibold rounded-lg hover:bg-amber-500 transition-colors"
-                      >
-                        Checkout
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center group-hover:bg-white group-hover:text-orange-500">
+              3
+            </span>
           </div>
         </div>
       </div>
 
       {/* Mobile Search Overlay */}
       {mobileSearchOpen && (
-        <div className="sm:hidden fixed top-14 left-0 w-full bg-white border-b shadow-lg z-40 slide-in-from-top-2">
-          <div className="p-4">
-            <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-3">
-              <IoIosSearch className="text-blue-600 text-xl mr-3" />
+        <div className="fixed inset-0 bg-black/50 z-50 mobile-backdrop">
+          <div className="bg-white p-4 slide-in-from-top">
+            <div className="flex items-center space-x-3">
+              <IoIosSearch className="text-gray-500 text-xl" />
               <input
                 type="text"
-                className="w-full bg-transparent text-black text-base outline-none placeholder:text-gray-500"
+                className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-black outline-none focus:ring-2 focus:ring-orange-500"
                 placeholder="Search for Products, Brands and More"
                 autoFocus
               />
               <button
                 onClick={() => setMobileSearchOpen(false)}
-                className="ml-2 p-1 hover:bg-blue-100 rounded-full transition-colors"
+                className="p-2 text-gray-600"
               >
-                <FaTimes className="text-gray-500" />
+                <FaTimes className="text-xl" />
               </button>
-            </div>
-
-            {/* Quick Search Suggestions */}
-            <div className="mt-3">
-              <p className="text-xs text-gray-600 mb-2">Popular Searches</p>
-              <div className="flex flex-wrap gap-2">
-                {["Mobiles", "Fashion", "Electronics", "Home", "Books"].map(
-                  (item) => (
-                    <span
-                      key={item}
-                      className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full cursor-pointer hover:bg-gray-200 transition-colors"
-                    >
-                      {item}
-                    </span>
-                  )
-                )}
-              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="sm:hidden fixed inset-0  bg-opacity-50 z-30 mobile-backdrop fade-in"
-            onClick={() => setMobileMenuOpen(false)}
-          ></div>
-
-          {/* Mobile Menu Sidebar */}
-          <div className="sm:hidden fixed top-13 left-0 w-80 h-full bg-white z-40 slide-in-from-left shadow-2xl">
-            {/* Mobile Menu Header */}
-            <div className="bg-blue-600 p-4 text-white">
+        <div className="fixed inset-0 bg-black/50 z-50 mobile-backdrop">
+          <div className="bg-white w-80 h-full slide-in-from-left">
+            <div className="p-4 border-b">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                    <FaUser className="text-blue-600" />
+                  <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white">
+                    <FaUser />
                   </div>
                   <div>
-                    <p className="text-sm opacity-90">Hey!</p>
                     <p className="font-semibold">
                       {Login
-                        ? "Login & Get Started"
+                        ? "Guest User"
                         : user?.fullName ||
                           user?.name ||
                           localUser?.fullName ||
                           localUser?.name ||
-                          "Welcome"}
+                          "User"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {Login ? "Please login" : "Welcome back!"}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
+                  className="p-2 text-gray-600"
                 >
-                  <FaTimes className="text-white" />
+                  <FaTimes className="text-xl" />
                 </button>
               </div>
             </div>
 
-            {/* Mobile Menu Content */}
-            <div
-              className="flex-1 overflow-y-auto mobile-menu-scroll"
-              style={{ height: "calc(100vh - 80px)" }}
-            >
-              {/* Quick Actions */}
-              <div className="p-4 border-b border-gray-200">
-                <div className="grid grid-cols-2 gap-4">
-                  <Link
-                    href="/"
-                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <FaHome className="text-blue-600 text-xl mb-2" />
-                    <span className="text-sm font-medium">Home</span>
-                  </Link>
-                  <Link
-                    href="/categories"
-                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <FaTags className="text-green-600 text-xl mb-2" />
-                    <span className="text-sm font-medium">Categories</span>
-                  </Link>
-                  <Link
-                    href="/deals"
-                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <FaPercent className="text-red-600 text-xl mb-2" />
-                    <span className="text-sm font-medium">Deals</span>
-                  </Link>
-                  <Link
-                    href="/stores"
-                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <FaStore className="text-purple-600 text-xl mb-2" />
-                    <span className="text-sm font-medium">Stores</span>
-                  </Link>
-                </div>
+            <div className="mobile-menu-scroll overflow-y-auto h-full pb-20">
+              {/* Main Navigation */}
+              <div className="p-4 space-y-2">
+                <Link
+                  href="/"
+                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <FaHome className="text-orange-500" />
+                  <span>Home</span>
+                </Link>
+                <Link
+                  href="/categories"
+                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <FaTags className="text-orange-500" />
+                  <span>Categories</span>
+                </Link>
+                <Link
+                  href="/deals"
+                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <FaPercent className="text-orange-500" />
+                  <span>Deals</span>
+                </Link>
+                <Link
+                  href="/brands"
+                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <FaStore className="text-orange-500" />
+                  <span>Brands</span>
+                </Link>
               </div>
 
-              {/* Menu Items */}
-              <div className="py-2">
+              {/* Account Section */}
+              {!Login && (
+                <div className="border-t p-4 space-y-2">
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    My Account
+                  </h3>
+                  <Link
+                    href="/account"
+                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <FaUser className="text-blue-500" />
+                    <span>Profile</span>
+                  </Link>
+                  <Link
+                    href="/account/orders"
+                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <FaBoxOpen className="text-green-500" />
+                    <span>Orders</span>
+                  </Link>
+                  <Link
+                    href="/wishlist"
+                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <FaHeart className="text-red-500" />
+                    <span>Wishlist</span>
+                  </Link>
+                </div>
+              )}
+
+              {/* Support */}
+              <div className="border-t p-4 space-y-2">
+                <h3 className="font-semibold text-gray-800 mb-2">Support</h3>
+                <Link
+                  href="/help"
+                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <FaHeadset className="text-purple-500" />
+                  <span>Help Center</span>
+                </Link>
+                <Link
+                  href="/contact"
+                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <FaQuestionCircle className="text-gray-500" />
+                  <span>Contact Us</span>
+                </Link>
+              </div>
+
+              {/* Login/Logout */}
+              <div className="border-t p-4">
                 {Login ? (
-                  <div className="px-4 py-3">
-                    <Link
-                      href="/login"
-                      className="block w-full text-center px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors mb-2"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Login & Sign Up
-                    </Link>
-                  </div>
+                  <Link
+                    href="/login"
+                    className="flex items-center justify-center space-x-3 w-full p-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                  >
+                    <FaSignOutAlt />
+                    <span>Login</span>
+                  </Link>
                 ) : (
-                  <div className="space-y-1">
-                    <Link
-                      href="/profile"
-                      className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <FaUser className="text-gray-600" />
-                        <span className="font-medium">My Profile</span>
-                      </div>
-                      <FaChevronRight className="text-gray-400 text-sm" />
-                    </Link>
-                    <Link
-                      href="/orders"
-                      className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <FaBoxOpen className="text-gray-600" />
-                        <span className="font-medium">Orders</span>
-                      </div>
-                      <FaChevronRight className="text-gray-400 text-sm" />
-                    </Link>
-                    <Link
-                      href="/wishlist"
-                      className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <FaHeart className="text-gray-600" />
-                        <span className="font-medium">Wishlist</span>
-                      </div>
-                      <FaChevronRight className="text-gray-400 text-sm" />
-                    </Link>
-                  </div>
-                )}
-
-                <div className="border-t border-gray-200 mt-2 pt-2">
-                  <Link
-                    href="/coupons"
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
+                  <button
+                    onClick={LogOut}
+                    className="flex items-center justify-center space-x-3 w-full p-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                   >
-                    <div className="flex items-center space-x-3">
-                      <FaTicketAlt className="text-gray-600" />
-                      <span className="font-medium">Coupons</span>
-                    </div>
-                    <FaChevronRight className="text-gray-400 text-sm" />
-                  </Link>
-                  <Link
-                    href="/gift-cards"
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <FaGift className="text-gray-600" />
-                      <span className="font-medium">Gift Cards</span>
-                    </div>
-                    <FaChevronRight className="text-gray-400 text-sm" />
-                  </Link>
-                  <Link
-                    href="/notifications"
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <FaBell className="text-gray-600" />
-                      <span className="font-medium">Notifications</span>
-                    </div>
-                    <FaChevronRight className="text-gray-400 text-sm" />
-                  </Link>
-                </div>
-
-                <div className="border-t border-gray-200 mt-2 pt-2">
-                  <Link
-                    href="/help"
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <FaHeadset className="text-gray-600" />
-                      <span className="font-medium">Help Center</span>
-                    </div>
-                    <FaChevronRight className="text-gray-400 text-sm" />
-                  </Link>
-                  <Link
-                    href="/legal"
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <FaQuestionCircle className="text-gray-600" />
-                      <span className="font-medium">Legal</span>
-                    </div>
-                    <FaChevronRight className="text-gray-400 text-sm" />
-                  </Link>
-                </div>
-
-                {!Login && (
-                  <div className="border-t border-gray-200 mt-2 pt-2">
-                    <button
-                      onClick={() => {
-                        LogOut();
-                        setMobileMenuOpen(false);
-                      }}
-                      className="flex items-center w-full px-4 py-3 hover:bg-red-50 transition-colors text-red-600"
-                    >
-                      <FaSignOutAlt className="mr-3" />
-                      <span className="font-medium">Logout</span>
-                    </button>
-                  </div>
+                    <FaSignOutAlt />
+                    <span>Logout</span>
+                  </button>
                 )}
               </div>
-            </div>
-
-            {/* Mobile Menu Footer */}
-            <div className="border-t border-gray-200 p-4">
-              <Link
-                href="/download"
-                className="flex items-center justify-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <FaDownload />
-                <span className="font-medium">Download App</span>
-              </Link>
             </div>
           </div>
-        </>
+        </div>
       )}
     </>
   );

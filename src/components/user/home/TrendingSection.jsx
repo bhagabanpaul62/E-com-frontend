@@ -1,3 +1,4 @@
+// Moved from user/TrendingSection.jsx
 "use client";
 
 import Link from "next/link";
@@ -16,7 +17,6 @@ const TrendingSection = ({ products = [] }) => {
 
   return (
     <div className="bg-white">
-      {/* Header */}
       <div className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 sm:space-x-3">
@@ -41,7 +41,6 @@ const TrendingSection = ({ products = [] }) => {
         </div>
       </div>
 
-      {/* Products Grid */}
       <div className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3 lg:gap-4">
           {trendingProducts.map((product, index) => (
@@ -51,7 +50,6 @@ const TrendingSection = ({ products = [] }) => {
               className="group"
             >
               <div className="bg-white border border-border rounded-lg overflow-hidden hover:shadow-md transition-all duration-200 relative">
-                {/* Trending Badge */}
                 {index < 3 && (
                   <div className="absolute top-2 left-2 bg-chart-2 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center space-x-1 z-10">
                     <FaBolt className="text-xs" />
@@ -59,7 +57,6 @@ const TrendingSection = ({ products = [] }) => {
                   </div>
                 )}
 
-                {/* Product Image */}
                 <div className="aspect-square bg-muted/50 relative overflow-hidden">
                   <Image
                     src={product.mainImage || "/placeholder.svg"}
@@ -69,13 +66,11 @@ const TrendingSection = ({ products = [] }) => {
                   />
                 </div>
 
-                {/* Product Info */}
                 <div className="p-3 space-y-2">
                   <h3 className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
                     {product.name}
                   </h3>
 
-                  {/* Rating */}
                   {product.averageRating > 0 && (
                     <div className="flex items-center space-x-1">
                       <div className="flex items-center space-x-1 bg-chart-1 text-white px-2 py-1 rounded text-xs">
@@ -88,7 +83,6 @@ const TrendingSection = ({ products = [] }) => {
                     </div>
                   )}
 
-                  {/* Price */}
                   <div className="flex items-center space-x-2">
                     <span className="text-lg font-semibold text-foreground">
                       ₹{product.price?.toLocaleString()}
@@ -100,7 +94,6 @@ const TrendingSection = ({ products = [] }) => {
                     )}
                   </div>
 
-                  {/* Tags */}
                   <div className="flex flex-wrap gap-1">
                     {product.isTrending && (
                       <span className="text-xs bg-chart-2/10 text-chart-2 px-2 py-1 rounded-full">

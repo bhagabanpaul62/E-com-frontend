@@ -1,5 +1,5 @@
+// Moved from user/categoryWithImage.jsx
 "use client";
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
@@ -14,7 +14,6 @@ function CategoryWithImage() {
       const res = await axios.get(
         `${process.env.NEXT_PUBLIC_SERVER}/users/category`
       );
-      // Filter only parent categories with images and featured status
       const parentCategories = res.data.data.data.filter(
         (cat) => cat.parentId === null && cat.image && cat.isFeatured
       );
@@ -41,7 +40,6 @@ function CategoryWithImage() {
           View All
         </Link>
       </div>
-
       {loading ? (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 overflow-x-auto hide-scrollbar pb-2 snap-x">
           {[...Array(8)].map((_, i) => (
@@ -59,8 +57,6 @@ function CategoryWithImage() {
               id={category._id}
             />
           ))}
-
-          {/* If fewer than 8 categories, show "View All" card */}
           {categories.length < 8 && (
             <Link href="/categories">
               <div className="flex flex-col items-center justify-center h-full transition-transform hover:translate-y-[-5px] cursor-pointer group">
@@ -90,7 +86,6 @@ function CategoryWithImage() {
           )}
         </div>
       )}
-
       <style jsx>{`
         .hide-scrollbar {
           -ms-overflow-style: none;

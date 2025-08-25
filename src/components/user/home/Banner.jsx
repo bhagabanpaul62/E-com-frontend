@@ -1,3 +1,4 @@
+// Moved from user/banner.jsx
 import axios from "axios";
 import React, { useEffect, useState, useCallback } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
@@ -14,13 +15,12 @@ function Banner() {
     getBanner();
   }, []);
 
-  // Auto-slide functionality
   useEffect(() => {
     let interval;
     if (!isPaused && banners.length > 0) {
       interval = setInterval(() => {
         nextSlide();
-      }, 4000); // Slide every 4 seconds
+      }, 4000);
     }
 
     return () => {
@@ -28,7 +28,6 @@ function Banner() {
     };
   }, [isPaused, banners.length, current]);
 
-  // Control functions
   const nextSlide = useCallback(() => {
     setCurrent((current) => (current + 1) % banners.length);
   }, [banners.length]);
@@ -41,7 +40,6 @@ function Banner() {
     setCurrent(index);
   };
 
-  // Touch handlers for mobile swipe
   const handleTouchStart = (e) => {
     setTouchStart(e.targetTouches[0].clientX);
   };
@@ -52,12 +50,10 @@ function Banner() {
 
   const handleTouchEnd = () => {
     if (touchStart - touchEnd > 50) {
-      // Swipe left (next)
       nextSlide();
     }
 
     if (touchStart - touchEnd < -50) {
-      // Swipe right (prev)
       prevSlide();
     }
   };
@@ -86,7 +82,7 @@ function Banner() {
   }
 
   if (banners.length === 0) {
-    return null; // Don't render anything if no banners
+    return null;
   }
 
   return (
@@ -98,7 +94,6 @@ function Banner() {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Banner slides */}
       <div
         className="flex transition-transform duration-500 ease-out h-32 sm:h-40 md:h-56 lg:h-64 xl:h-80"
         style={{ transform: `translateX(-${current * 100}%)` }}
@@ -114,7 +109,6 @@ function Banner() {
         ))}
       </div>
 
-      {/* Navigation arrows - Hidden on mobile */}
       <button
         className="absolute top-1/2 left-2 sm:left-4 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-1.5 sm:p-2 shadow-lg z-10 transition-all opacity-0 sm:opacity-70 hover:opacity-100 hidden sm:block"
         onClick={prevSlide}
@@ -130,7 +124,6 @@ function Banner() {
         <FaChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
       </button>
 
-      {/* Dots indicator */}
       <div className="absolute bottom-2 sm:bottom-3 left-0 right-0 flex justify-center gap-1 sm:gap-1.5">
         {banners.map((_, index) => (
           <button
@@ -150,26 +143,3 @@ function Banner() {
 }
 
 export default Banner;
-
-// You can also add this CSS to your global stylesheet if preferred
-const styles = `
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  
-  .carousel-fade {
-    animation: fadeIn 0.5s ease-out;
-  }
-  
-  @media (max-width: 640px) {
-    .carousel-dots {
-      bottom: 0.5rem;
-    }
-    
-    .carousel-dot {
-      width: 6px;
-      height: 6px;
-    }
-  }
-`;

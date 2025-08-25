@@ -1,3 +1,4 @@
+// Moved from user/DealsOfTheDay.jsx
 "use client";
 
 import Link from "next/link";
@@ -27,7 +28,6 @@ const DealsOfTheDay = ({ products = [] }) => {
           minutes = 59;
           seconds = 59;
         } else {
-          // Reset to 24 hours
           hours = 23;
           minutes = 59;
           seconds = 59;
@@ -52,7 +52,6 @@ const DealsOfTheDay = ({ products = [] }) => {
 
   return (
     <div className="bg-white">
-      {/* Header */}
       <div className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gradient-to-r from-red-50 to-orange-50">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center space-x-2 sm:space-x-3">
@@ -67,7 +66,6 @@ const DealsOfTheDay = ({ products = [] }) => {
             </div>
           </div>
 
-          {/* Timer */}
           <div className="flex items-center space-x-2 sm:space-x-3">
             <FaClock className="text-red-500 hidden sm:block" />
             <div className="flex items-center space-x-1 text-xs sm:text-sm font-mono">
@@ -87,7 +85,6 @@ const DealsOfTheDay = ({ products = [] }) => {
         </div>
       </div>
 
-      {/* Products */}
       <div className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3 lg:gap-4">
           {dealProducts.map((product) => {
@@ -107,12 +104,10 @@ const DealsOfTheDay = ({ products = [] }) => {
                 className="group"
               >
                 <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 relative">
-                  {/* Deal Badge */}
                   <div className="absolute top-0 left-0 bg-red-500 text-white text-xs font-bold px-2 sm:px-3 py-1 rounded-br-lg z-10">
                     {discountPercent}% OFF
                   </div>
 
-                  {/* Product Image */}
                   <div className="aspect-square bg-gray-50 relative overflow-hidden">
                     <Image
                       src={product.mainImage || "/placeholder.svg"}
@@ -122,7 +117,6 @@ const DealsOfTheDay = ({ products = [] }) => {
                     />
                   </div>
 
-                  {/* Product Info */}
                   <div className="p-2 sm:p-3 space-y-1 sm:space-y-2">
                     <h3 className="text-xs sm:text-sm font-medium text-gray-900 line-clamp-2 leading-tight">
                       {product.name}
@@ -155,7 +149,6 @@ const DealsOfTheDay = ({ products = [] }) => {
           })}
         </div>
 
-        {/* View All Button */}
         <div className="text-center mt-6">
           <Link
             href="/deals"

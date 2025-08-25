@@ -1,3 +1,4 @@
+// Moved from user/footer.jsx
 "use client";
 
 import {
@@ -13,7 +14,6 @@ function Footer() {
   return (
     <footer className="bg-gray-50 border-t border-gray-200 mt-16 text-gray-700">
       <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
-        {/* Company Info */}
         <div>
           <h3 className="text-lg font-bold mb-3 text-amber-500">E-com</h3>
           <p className="text-sm mb-4">
@@ -41,7 +41,6 @@ function Footer() {
           </div>
         </div>
 
-        {/* Customer Service */}
         <div>
           <h4 className="font-semibold mb-3">Customer Service</h4>
           <ul className="space-y-2 text-sm">
@@ -68,7 +67,6 @@ function Footer() {
           </ul>
         </div>
 
-        {/* Useful Links */}
         <div>
           <h4 className="font-semibold mb-3">Useful Links</h4>
           <ul className="space-y-2 text-sm">
@@ -87,11 +85,9 @@ function Footer() {
                 Terms & Conditions
               </a>
             </li>
-            
           </ul>
         </div>
 
-        {/* Payment & Contact */}
         <div>
           <h4 className="font-semibold mb-3">We Accept</h4>
           <div className="flex gap-3 mb-4">

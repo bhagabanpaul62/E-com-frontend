@@ -1,13 +1,14 @@
+// Moved from user/FlipkartHomePage.jsx
 "use client";
 
 import axios from "axios";
 import { useState, useEffect } from "react";
-import FlipkartBanner from "./FlipkartBanner";
-import CategoryShowcase from "./CategoryShowcase";
+import FlipkartBanner from "../FlipkartBanner";
+import { CategoryShowcase } from "../category";
 import DealsOfTheDay from "./DealsOfTheDay";
 import TrendingSection from "./TrendingSection";
-import BrandsShowcase from "./BrandsShowcase";
-import ProductGrid from "./ProductGrid";
+import BrandsShowcase from "../BrandsShowcase";
+import { ProductGrid } from "../product";
 
 function FlipkartHomePage() {
   const [categories, setCategories] = useState([]);
@@ -44,7 +45,6 @@ function FlipkartHomePage() {
     fetchData();
   }, []);
 
-  // Get products by category
   const getProductsByCategory = (categoryId) => {
     return products.filter((product) => {
       const productCategoryId =
@@ -55,16 +55,12 @@ function FlipkartHomePage() {
     });
   };
 
-  // Loading State
   if (loading) {
     return (
       <div className="bg-muted/30 min-h-screen">
         <div className="max-w-screen-xl mx-auto px-4 py-6">
           <div className="space-y-6">
-            {/* Banner Skeleton */}
             <div className="bg-white rounded-lg h-64 md:h-80 lg:h-96 animate-pulse"></div>
-
-            {/* Categories Skeleton */}
             <div className="bg-white rounded-lg p-6">
               <div className="h-6 bg-muted rounded w-48 mb-4 animate-pulse"></div>
               <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-4">
@@ -76,8 +72,6 @@ function FlipkartHomePage() {
                 ))}
               </div>
             </div>
-
-            {/* Products Skeleton */}
             {[...Array(3)].map((_, index) => (
               <div key={index} className="bg-white rounded-lg p-6">
                 <div className="h-6 bg-muted rounded w-64 mb-4 animate-pulse"></div>
@@ -98,7 +92,6 @@ function FlipkartHomePage() {
     );
   }
 
-  // Error State
   if (error) {
     return (
       <div className="bg-muted/30 min-h-screen flex items-center justify-center">
@@ -119,22 +112,12 @@ function FlipkartHomePage() {
     <div className="bg-muted/30 min-h-screen">
       <div className="max-w-screen-xl mx-auto px-4 py-6">
         <div className="space-y-6">
-          {/* Main Banner */}
           <FlipkartBanner banners={banners} />
-
-          {/* Categories Showcase */}
           <CategoryShowcase categories={categories} />
-
-          {/* Deals of the Day */}
           <DealsOfTheDay products={products} />
-
-          {/* Trending Section */}
           <TrendingSection products={products} />
-
-          {/* Brands Showcase */}
           <BrandsShowcase products={products} />
 
-          {/* Category-wise Products */}
           {categories.map((category) => {
             const categoryProducts = getProductsByCategory(category._id);
 
@@ -152,7 +135,6 @@ function FlipkartHomePage() {
             );
           })}
 
-          {/* Empty State */}
           {categories.length === 0 && products.length === 0 && (
             <div className="bg-white rounded-lg shadow-sm p-16 text-center">
               <div className="text-muted-foreground text-lg mb-4">

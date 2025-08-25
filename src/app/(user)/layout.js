@@ -1,13 +1,10 @@
-import Nav from "@/components/user/nav";
+import Nav from "@/components/user/layout/Nav";
 import "../globals.css";
 import { getAuthStatus } from "@/lib/auth";
-import CategoryNavigation from "@/components/user/categoryNavigation";
+import CategoryNavigation from "@/components/user/category/CategoryNavigation";
 import FlipkartFooter from "@/components/user/FlipkartFooter";
-import AuthFallback from "@/components/AuthFallback";
-import AuthProvider from "@/components/AuthProvider";
-
-
-
+import AuthFallback from "@/components/auth/AuthFallback";
+import AuthProvider from "@/components/auth/AuthProvider";
 
 export default async function RootLayout({ children }) {
   // Try to get user status, but don't fail if token is expired
@@ -22,14 +19,13 @@ export default async function RootLayout({ children }) {
     );
   }
 
-
   return (
     <AuthProvider initialUser={user}>
       <main>
         <AuthFallback />
         <Nav user={user} />
         <header className="pt-14 sm:pt-16">
-           <CategoryNavigation />
+          <CategoryNavigation />
         </header>
         {children}
         <footer>
