@@ -128,13 +128,12 @@ export default function EnhancedCartPage() {
     // Free shipping for orders ₹2000 and above
 
     // Add tax (GST: 18%)
-    const tax = Math.round(totalPrice * 0.18);
-    total += tax;
+  
 
     return {
       subtotal: totalPrice,
       shipping: totalPrice < 2000 ? 100 : 0,
-      tax: tax,
+      
       total: total,
     };
   };
@@ -504,10 +503,7 @@ export default function EnhancedCartPage() {
                     </span>
                   </div>
 
-                  <div className="flex justify-between">
-                    <span>Estimated tax (GST):</span>
-                    <span>₹{totals.tax.toFixed(0)}</span>
-                  </div>
+                  
                 </div>
 
                 <div className="border-t border-b py-2 mb-4">
@@ -530,7 +526,8 @@ export default function EnhancedCartPage() {
                         <div>
                           <p className="font-medium">Standard Delivery</p>
                           <p className="text-xs text-gray-500">
-                            Arrives by {standardDelivery.toLocaleDateString("en-US", {
+                            Arrives by{" "}
+                            {standardDelivery.toLocaleDateString("en-US", {
                               weekday: "short",
                               month: "short",
                               day: "numeric",
