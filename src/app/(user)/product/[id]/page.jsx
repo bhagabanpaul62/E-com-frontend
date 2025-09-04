@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import Review from "@/components/user/product/Review";
+import AddToCartButton from "@/components/user/cart/AddToCartButton";
 
 const ProductPage = () => {
   const params = useParams();
@@ -570,18 +571,20 @@ const ProductPage = () => {
               >
                 {(product?.totalStock || 0) > 0 ? "Buy Now" : "Out of Stock"}
               </button>
-              <button
-                onClick={handleAddToCart}
-                disabled={(product?.totalStock || 0) <= 0}
-                className={`w-full flex items-center justify-center space-x-2 ${
-                  (product?.totalStock || 0) > 0
-                    ? "bg-white border-2 border-amber-400 text-amber-600 hover:bg-amber-50"
-                    : "bg-gray-100 border-2 border-gray-300 text-gray-400 cursor-not-allowed"
-                } py-4 rounded-xl font-semibold text-lg transition-colors`}
-              >
-                <ShoppingCart className="h-5 w-5" />
-                <span>Add to Cart</span>
-              </button>
+              {product && (product?.totalStock || 0) > 0 ? (
+                <AddToCartButton
+                  product={product}
+                  variantId={getSelectedVariant()?._id}
+                />
+              ) : (
+                <button
+                  disabled
+                  className="w-full flex items-center justify-center space-x-2 bg-gray-100 border-2 border-gray-300 text-gray-400 cursor-not-allowed py-4 rounded-xl font-semibold text-lg transition-colors"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  <span>Add to Cart</span>
+                </button>
+              )}
             </div>
 
             {/* Service Features */}

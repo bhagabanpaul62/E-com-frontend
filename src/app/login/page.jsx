@@ -1,46 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
+import { loginUser } from "@/redux/features/user/userSlice";
 
 const Login = () => {
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.user);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setErrorMsg("");
 
     try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER}/api/users/login`,
-        {
+      const resultAction = await dispatch(
+        loginUser({
           email: emailOrPhone,
           password,
-        },
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        })
       );
 
-      console.log("Login response:", res.data);
+      if (loginUser.fulfilled.match(resultAction)) {
+        console.log("Login successful!");
 
-      // Save access token and user data in localStorage as a fallback
-      if (res?.data?.data?.accessToken) {
-        localStorage.setItem("accessToken", res.data.data.accessToken);
-      }
+        const userData = resultAction.payload;
 
-      // Save user data in localStorage
-      if (res?.data?.data?.user) {
-        const userData = res.data.data.user;
+        // Check if user is admin and redirect accordingly
+        if (userData.isAdmin) {
+          console.log("Admin login detected, redirecting to admin dashboard");
+          router.push("/admin");
+        } else {
+          router.push("/");
+        }
         localStorage.setItem("user", JSON.stringify(userData));
 
         // Set a specific admin flag for easier checking
@@ -84,6 +80,9 @@ const Login = () => {
 
         {errorMsg && (
           <div className="text-red-600 text-sm text-center">{errorMsg}</div>
+        )}
+        {error && (
+          <div className="text-red-600 text-sm text-center">{error}</div>
         )}
 
         <fieldset disabled={loading} className="space-y-4">

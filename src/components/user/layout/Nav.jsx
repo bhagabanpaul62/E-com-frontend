@@ -4,9 +4,11 @@ import Image from "next/image";
 import { IoIosSearch } from "react-icons/io";
 import { FaRegUserCircle } from "react-icons/fa";
 import { FaShoppingCart } from "react-icons/fa";
+import CartIcon from "@/components/user/cart/CartIcon";
 import { useEffect, useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 import axios from "axios";
 import {
   FaUser,
@@ -64,34 +66,16 @@ export default function Nav({ user }) {
     }
   }, [user]);
 
+  // Define effectiveUser to use throughout the component
+  const effectiveUser = user || localUser;
+
   const handelMouseEnter = (e) => {
     console.log("maouse enter", e);
     setEnterMouse(true);
   };
 
-  const LogOut = async () => {
-    try {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("user");
-
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER}/api/users/logout`,
-        {},
-        {
-          withCredentials: true,
-        }
-      );
-      console.log("Logout successful:", res.data);
-      setLogin(true);
-      setLocalUser(null);
-      window.location.reload();
-    } catch (error) {
-      console.error("Logout failed:", error);
-      setLogin(true);
-      setLocalUser(null);
-      window.location.reload();
-    }
-  };
+  // Use the logout function from useAuth hook
+  const { logout } = useAuth();
 
   return (
     <>
@@ -336,7 +320,7 @@ export default function Nav({ user }) {
                       <div className="border-t border-gray-200 pt-3">
                         <button
                           className="flex items-center gap-3 w-full px-3 py-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors group"
-                          onClick={LogOut}
+                          onClick={logout}
                         >
                           <FaSignOutAlt className="text-lg group-hover:scale-110 transition-transform" />
                           <span className="font-medium">Logout</span>
@@ -349,17 +333,17 @@ export default function Nav({ user }) {
             )}
           </div>
 
-          <Link
-            href="/cart"
-            onMouseEnter={() => setCartHover(true)}
-            onMouseLeave={() => setCartHover(false)}
-            className="relative flex items-center gap-1 sm:gap-2 rounded-lg transition-colors duration-200 cursor-pointer px-2 sm:px-4 py-1 sm:py-2 hover:bg-orange-500 hover:text-white group"
-          >
-            <FaShoppingCart className="text-xl sm:text-2xl" />
-            <span className="hidden md:inline">Cart</span>
-            <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center group-hover:bg-white group-hover:text-orange-500">
-              3
-            </span>
+          <Link href="/cart">
+            <div className="relative flex items-center gap-1 sm:gap-2 rounded-lg transition-colors duration-200 cursor-pointer px-2 sm:px-4 py-1 sm:py-2 hover:bg-orange-500 hover:text-white group">
+              {effectiveUser ? (
+                <CartIcon />
+              ) : (
+                <>
+                  <FaShoppingCart className="h-6 w-6" />
+                  <span className="hidden md:inline">Cart</span>
+                </>
+              )}
+            </div>
           </Link>
         </div>
       </div>
@@ -511,7 +495,7 @@ export default function Nav({ user }) {
                   <button
                     onClick={() => {
                       setMobileMenuOpen(false);
-                      LogOut();
+                      logout();
                     }}
                     className="flex items-center justify-center space-x-3 w-full p-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                   >

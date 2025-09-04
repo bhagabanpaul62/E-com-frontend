@@ -12,6 +12,16 @@ export function useAuth() {
     try {
       console.log("🔄 Client-side token refresh...");
 
+      // Add timeout to refresh request
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      // Get refreshToken from localStorage as fallback
+      const storedRefreshToken =
+        typeof window !== "undefined"
+          ? localStorage.getItem("refreshToken")
+          : null;
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER}/api/users/refresh-token`,
         {
@@ -19,9 +29,13 @@ export function useAuth() {
           headers: {
             "Content-Type": "application/json",
           },
+          body: storedRefreshToken
+            ? JSON.stringify({ refreshToken: storedRefreshToken })
+            : undefined,
           credentials: "include", // Important for cookies
+          signal: controller.signal,
         }
-      );
+      ).finally(() => clearTimeout(timeoutId));
 
       if (!response.ok) {
         console.error("❌ Failed to refresh token:", response.status);
@@ -39,7 +53,12 @@ export function useAuth() {
 
       return false;
     } catch (error) {
-      console.error("❌ Error refreshing token:", error);
+      // Handle network errors gracefully
+      if (error.name === "TypeError" && error.message === "Failed to fetch") {
+        console.log("Backend server unreachable during token refresh");
+      } else {
+        console.error("❌ Error refreshing token:", error);
+      }
       return false;
     }
   }, []);
@@ -95,12 +114,20 @@ export function useAuth() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        // Check if we're running in a browser environment (not during SSR)
+        if (typeof window === "undefined") return;
+
+        // Add a timeout to the fetch request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_SERVER}/api/users/validate-token`,
           {
             credentials: "include",
+            signal: controller.signal,
           }
-        );
+        ).finally(() => clearTimeout(timeoutId));
 
         if (response.ok) {
           const data = await response.json();
@@ -147,8 +174,20 @@ export function useAuth() {
         }
       } catch (error) {
         console.error("❌ Error checking auth status:", error);
+
+        // Handle network errors gracefully
+        if (error.name === "TypeError" && error.message === "Failed to fetch") {
+          console.log("Backend server unreachable, continuing as guest");
+        }
+
+        // Continue as guest if auth check fails
         setIsAuthenticated(false);
         setUser(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("user");
+        }
       } finally {
         setLoading(false);
       }
@@ -159,16 +198,30 @@ export function useAuth() {
 
   const logout = useCallback(async () => {
     try {
+      // Add timeout to logout request
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+
       await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/users/logout`, {
         method: "POST",
         credentials: "include",
-      });
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId));
     } catch (error) {
-      console.error("❌ Error during logout:", error);
+      // Handle network errors gracefully
+      if (error.name === "TypeError" && error.message === "Failed to fetch") {
+        console.log("Backend server unreachable during logout");
+      } else {
+        console.error("❌ Error during logout:", error);
+      }
     } finally {
       setIsAuthenticated(false);
       setUser(null);
       if (typeof window !== "undefined") {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
+        localStorage.removeItem("isAdmin");
         window.location.href = "/login";
       }
     }
