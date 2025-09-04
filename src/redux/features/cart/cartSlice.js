@@ -365,5 +365,5 @@ const cartSlice = createSlice({
 });
 
 export const { resetCartError, resetCart } = cartSlice.actions;
-export { addItemToCart, updateCartItem, removeCartItem, fetchCart, clearCart };
+// Don't re-export the async thunks as they are already exported above
 export default cartSlice.reducer;
