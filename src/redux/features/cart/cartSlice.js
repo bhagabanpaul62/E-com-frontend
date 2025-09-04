@@ -15,9 +15,46 @@ export const fetchCart = createAsyncThunk(
         `${process.env.NEXT_PUBLIC_SERVER}/api/cart`,
         {
           headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
         }
       );
-      return response.data.data;
+
+      // Transform backend cart data to match frontend expectations
+      const cartData = response.data.data;
+
+      // Process items to have the correct structure with product field
+      const transformedItems = cartData.items.map((item) => {
+        // Calculate stock based on product's totalStock or variant stock if applicable
+        const productStock = item.productId.totalStock || 0;
+        const variantStock =
+          item.variantId &&
+          item.productId.variants?.find((v) => v._id === item.variantId)?.stock;
+
+        // Use the variant's stock if available, otherwise use product's totalStock
+        const effectiveStock =
+          item.variantId && variantStock !== undefined
+            ? variantStock
+            : productStock;
+
+        // Enhance product data with stock information
+        const enhancedProduct = {
+          ...item.productId,
+          stock: effectiveStock,
+        };
+
+        return {
+          product: enhancedProduct,
+          quantity: item.quantity,
+          variantId: item.variantId || null,
+          priceAtAdd: item.priceAtAdd,
+        };
+      });
+
+      return {
+        items: transformedItems,
+        totalItems: cartData.totalItems,
+        totalPrice: cartData.totalPrice,
+      };
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Error fetching cart"
@@ -170,15 +207,37 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(addItemToCart.fulfilled, (state, action) => {
-        state.items =
-          action.payload.items?.map((item) => ({
-            ...item,
-            product: item.product || {
-              name: "Product not available",
-              price: 0,
-              images: [],
-            },
-          })) || [];
+        // Transform backend cart data to match frontend expectations
+        const transformedItems =
+          action.payload.items?.map((item) => {
+            // Calculate stock based on product's totalStock or variant stock if applicable
+            const productStock = item.productId.totalStock || 0;
+            const variantStock =
+              item.variantId &&
+              item.productId.variants?.find((v) => v._id === item.variantId)
+                ?.stock;
+
+            // Use the variant's stock if available, otherwise use product's totalStock
+            const effectiveStock =
+              item.variantId && variantStock !== undefined
+                ? variantStock
+                : productStock;
+
+            // Enhance product data with stock information
+            const enhancedProduct = {
+              ...item.productId,
+              stock: effectiveStock,
+            };
+
+            return {
+              product: enhancedProduct,
+              quantity: item.quantity,
+              variantId: item.variantId || null,
+              priceAtAdd: item.priceAtAdd,
+            };
+          }) || [];
+
+        state.items = transformedItems;
         state.totalItems = action.payload.totalItems || 0;
         state.totalPrice = action.payload.totalPrice || 0;
         state.loading = false;
@@ -196,15 +255,37 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
-        state.items =
-          action.payload.items?.map((item) => ({
-            ...item,
-            product: item.product || {
-              name: "Product not available",
-              price: 0,
-              images: [],
-            },
-          })) || [];
+        // Transform backend cart data to match frontend expectations
+        const transformedItems =
+          action.payload.items?.map((item) => {
+            // Calculate stock based on product's totalStock or variant stock if applicable
+            const productStock = item.productId.totalStock || 0;
+            const variantStock =
+              item.variantId &&
+              item.productId.variants?.find((v) => v._id === item.variantId)
+                ?.stock;
+
+            // Use the variant's stock if available, otherwise use product's totalStock
+            const effectiveStock =
+              item.variantId && variantStock !== undefined
+                ? variantStock
+                : productStock;
+
+            // Enhance product data with stock information
+            const enhancedProduct = {
+              ...item.productId,
+              stock: effectiveStock,
+            };
+
+            return {
+              product: enhancedProduct,
+              quantity: item.quantity,
+              variantId: item.variantId || null,
+              priceAtAdd: item.priceAtAdd,
+            };
+          }) || [];
+
+        state.items = transformedItems;
         state.totalItems = action.payload.totalItems || 0;
         state.totalPrice = action.payload.totalPrice || 0;
         state.loading = false;
@@ -222,15 +303,37 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(removeCartItem.fulfilled, (state, action) => {
-        state.items =
-          action.payload.items?.map((item) => ({
-            ...item,
-            product: item.product || {
-              name: "Product not available",
-              price: 0,
-              images: [],
-            },
-          })) || [];
+        // Transform backend cart data to match frontend expectations
+        const transformedItems =
+          action.payload.items?.map((item) => {
+            // Calculate stock based on product's totalStock or variant stock if applicable
+            const productStock = item.productId.totalStock || 0;
+            const variantStock =
+              item.variantId &&
+              item.productId.variants?.find((v) => v._id === item.variantId)
+                ?.stock;
+
+            // Use the variant's stock if available, otherwise use product's totalStock
+            const effectiveStock =
+              item.variantId && variantStock !== undefined
+                ? variantStock
+                : productStock;
+
+            // Enhance product data with stock information
+            const enhancedProduct = {
+              ...item.productId,
+              stock: effectiveStock,
+            };
+
+            return {
+              product: enhancedProduct,
+              quantity: item.quantity,
+              variantId: item.variantId || null,
+              priceAtAdd: item.priceAtAdd,
+            };
+          }) || [];
+
+        state.items = transformedItems;
         state.totalItems = action.payload.totalItems || 0;
         state.totalPrice = action.payload.totalPrice || 0;
         state.loading = false;

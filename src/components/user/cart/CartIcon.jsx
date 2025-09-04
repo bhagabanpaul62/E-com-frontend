@@ -11,9 +11,19 @@ export default function CartIcon() {
   const { totalItems } = useSelector((state) => state.cart);
 
   useEffect(() => {
+    // Fetch cart data when component mounts or user changes
     if (user) {
       dispatch(fetchCart());
     }
+
+    // Set up periodic refresh of cart data
+    const refreshInterval = setInterval(() => {
+      if (user) {
+        dispatch(fetchCart());
+      }
+    }, 15000); // Refresh every 15 seconds
+
+    return () => clearInterval(refreshInterval);
   }, [dispatch, user]);
 
   return (

@@ -20,7 +20,6 @@ import {
   AlertCircle,
   Heart,
   Check,
-  Gift,
   ChevronDown,
   ChevronRight,
   ShieldCheck,
@@ -38,24 +37,26 @@ export default function EnhancedCartPage() {
   );
   const { user } = useSelector((state) => state.user);
   const [savedForLater, setSavedForLater] = useState([]);
-  const [giftOptions, setGiftOptions] = useState({
-    isGift: false,
-    giftMessage: "",
-  });
-  const [deliveryOption, setDeliveryOption] = useState("standard");
   const [expandedSection, setExpandedSection] = useState("all");
 
-  // Estimated delivery dates
+  // Estimated delivery date
   const standardDelivery = new Date();
   standardDelivery.setDate(standardDelivery.getDate() + 5);
 
-  const expressDelivery = new Date();
-  expressDelivery.setDate(expressDelivery.getDate() + 2);
-
   useEffect(() => {
+    // Fetch cart data when component mounts or user changes
     if (user) {
       dispatch(fetchCart());
     }
+
+    // Set up periodic refresh of cart data
+    const refreshInterval = setInterval(() => {
+      if (user) {
+        dispatch(fetchCart());
+      }
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(refreshInterval);
   }, [dispatch, user]);
 
   const handleUpdateQuantity = (productId, quantity, variantId = null) => {
@@ -109,10 +110,6 @@ export default function EnhancedCartPage() {
     });
   };
 
-  const handleDeliveryOptionChange = (option) => {
-    setDeliveryOption(option);
-  };
-
   const toggleSection = (section) => {
     if (expandedSection === section) {
       setExpandedSection("all");
@@ -124,21 +121,19 @@ export default function EnhancedCartPage() {
   const calculateTotal = () => {
     let total = totalPrice;
 
-    // Add shipping cost based on delivery option
-    if (deliveryOption === "express") {
-      total += 9.99;
-    } else if (deliveryOption === "standard" && totalPrice < 35) {
-      total += 5.99;
+    // Add shipping cost based on order value
+    if (totalPrice < 2000) {
+      total += 100; // Standard shipping fee
     }
+    // Free shipping for orders ₹2000 and above
 
-    // Add tax (estimated as 8.25%)
-    const tax = totalPrice * 0.0825;
+    // Add tax (GST: 18%)
+    const tax = Math.round(totalPrice * 0.18);
     total += tax;
 
     return {
       subtotal: totalPrice,
-      shipping:
-        deliveryOption === "express" ? 9.99 : totalPrice < 35 ? 5.99 : 0,
+      shipping: totalPrice < 2000 ? 100 : 0,
       tax: tax,
       total: total,
     };
@@ -151,7 +146,7 @@ export default function EnhancedCartPage() {
     {
       id: "rec1",
       name: "Wireless Earbuds",
-      price: 29.99,
+      price: 1999,
       image: "https://placehold.co/100x100/png",
       rating: 4.5,
       reviewCount: 1250,
@@ -159,7 +154,7 @@ export default function EnhancedCartPage() {
     {
       id: "rec2",
       name: "Phone Stand",
-      price: 12.99,
+      price: 899,
       image: "https://placehold.co/100x100/png",
       rating: 4.2,
       reviewCount: 850,
@@ -167,7 +162,7 @@ export default function EnhancedCartPage() {
     {
       id: "rec3",
       name: "Fast Charging Cable",
-      price: 8.99,
+      price: 599,
       image: "https://placehold.co/100x100/png",
       rating: 4.3,
       reviewCount: 975,
@@ -320,7 +315,11 @@ export default function EnhancedCartPage() {
                                     )
                                   }
                                   min={1}
-                                  max={item.product.stock || 99}
+                                  max={
+                                    item.product.stock > 0
+                                      ? item.product.stock
+                                      : 99
+                                  }
                                   size="small"
                                 />
                               </div>
@@ -347,33 +346,19 @@ export default function EnhancedCartPage() {
                               </div>
                             </div>
 
-                            {deliveryOption === "standard" && (
-                              <div className="text-sm text-gray-600 mt-2">
-                                <Clock className="w-3 h-3 inline mr-1" />
-                                Arrives by{" "}
-                                {standardDelivery.toLocaleDateString("en-US", {
-                                  weekday: "long",
-                                  month: "short",
-                                  day: "numeric",
-                                })}
-                              </div>
-                            )}
-
-                            {deliveryOption === "express" && (
-                              <div className="text-sm text-gray-600 mt-2">
-                                <Clock className="w-3 h-3 inline mr-1" />
-                                Express: Arrives by{" "}
-                                {expressDelivery.toLocaleDateString("en-US", {
-                                  weekday: "long",
-                                  month: "short",
-                                  day: "numeric",
-                                })}
-                              </div>
-                            )}
+                            <div className="text-sm text-gray-600 mt-2">
+                              <Clock className="w-3 h-3 inline mr-1" />
+                              Arrives by{" "}
+                              {standardDelivery.toLocaleDateString("en-US", {
+                                weekday: "long",
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </div>
                           </div>
 
                           <div className="text-right mt-2 md:mt-0 font-medium">
-                            ${(item.product.price * item.quantity).toFixed(2)}
+                            ₹{(item.product.price * item.quantity).toFixed(0)}
                           </div>
                         </div>
                       </div>
@@ -384,7 +369,7 @@ export default function EnhancedCartPage() {
                 <div className="p-4 border-t bg-gray-50 text-right">
                   <div className="text-lg font-medium">
                     Subtotal ({totalItems} items):{" "}
-                    <span className="font-bold">${totalPrice.toFixed(2)}</span>
+                    <span className="font-bold">₹{totalPrice.toFixed(0)}</span>
                   </div>
                 </div>
               </div>
@@ -461,7 +446,7 @@ export default function EnhancedCartPage() {
                           </div>
 
                           <div className="text-right mt-2 md:mt-0 font-medium">
-                            ${item.product.price.toFixed(2)}
+                            ₹{item.product.price.toFixed(0)}
                           </div>
                         </div>
                       </div>
@@ -480,54 +465,7 @@ export default function EnhancedCartPage() {
               </div>
 
               <div className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {recommendedProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-                    >
-                      <div className="w-full h-32 relative mb-2">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
-                      <h3 className="font-medium text-sm line-clamp-2 mb-1">
-                        {product.name}
-                      </h3>
-                      <div className="flex items-center mb-1">
-                        <div className="text-amber-400 flex">
-                          {[...Array(5)].map((_, i) => (
-                            <svg
-                              key={i}
-                              className={`w-3 h-3 ${
-                                i < Math.floor(product.rating)
-                                  ? "fill-current"
-                                  : "fill-gray-300"
-                              }`}
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path>
-                            </svg>
-                          ))}
-                        </div>
-                        <span className="text-xs text-gray-500 ml-1">
-                          {product.reviewCount}
-                        </span>
-                      </div>
-                      <div className="font-bold text-lg">${product.price}</div>
-                      <Button
-                        className="w-full mt-2 bg-amber-500 hover:bg-amber-600 text-white text-xs py-1"
-                        size="sm"
-                      >
-                        Add to Cart
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
               </div>
             </div>
           </div>
@@ -554,124 +492,53 @@ export default function EnhancedCartPage() {
                 <div className="space-y-2 mb-4 text-sm">
                   <div className="flex justify-between">
                     <span>Items ({totalItems}):</span>
-                    <span>${totals.subtotal.toFixed(2)}</span>
+                    <span>₹{totals.subtotal.toFixed(0)}</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>Shipping & handling:</span>
                     <span>
                       {totals.shipping > 0
-                        ? `$${totals.shipping.toFixed(2)}`
+                        ? `₹${totals.shipping.toFixed(0)}`
                         : "FREE"}
                     </span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span>Estimated tax to be collected:</span>
-                    <span>${totals.tax.toFixed(2)}</span>
+                    <span>Estimated tax (GST):</span>
+                    <span>₹{totals.tax.toFixed(0)}</span>
                   </div>
                 </div>
 
                 <div className="border-t border-b py-2 mb-4">
                   <div className="flex justify-between text-lg font-bold">
                     <span>Order total:</span>
-                    <span>${totals.total.toFixed(2)}</span>
+                    <span>₹{totals.total.toFixed(0)}</span>
                   </div>
                 </div>
 
-                {/* Gift options */}
-                <div className="mb-4">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Checkbox
-                      id="gift-option"
-                      checked={giftOptions.isGift}
-                      onCheckedChange={(checked) =>
-                        setGiftOptions({ ...giftOptions, isGift: checked })
-                      }
-                    />
-                    <label
-                      htmlFor="gift-option"
-                      className="text-sm font-medium flex items-center"
-                    >
-                      <Gift className="w-4 h-4 mr-2" />
-                      Add a gift message
-                    </label>
-                  </div>
-
-                  {giftOptions.isGift && (
-                    <textarea
-                      value={giftOptions.giftMessage}
-                      onChange={handleGiftMessageChange}
-                      className="w-full p-2 text-sm border rounded-md"
-                      placeholder="Add your gift message here..."
-                      rows={3}
-                    />
-                  )}
-                </div>
-
-                {/* Delivery options */}
+                {/* Delivery information */}
                 <div className="mb-6">
                   <h3 className="font-medium text-sm mb-2">
-                    Choose delivery option:
+                    Delivery Information:
                   </h3>
 
                   <div className="space-y-2">
-                    <div
-                      className={`border rounded-md p-3 cursor-pointer ${
-                        deliveryOption === "standard"
-                          ? "border-amber-500 bg-amber-50"
-                          : ""
-                      }`}
-                      onClick={() => handleDeliveryOptionChange("standard")}
-                    >
+                    <div className="border rounded-md p-3 border-amber-500 bg-amber-50">
                       <div className="flex">
-                        <input
-                          type="radio"
-                          checked={deliveryOption === "standard"}
-                          onChange={() => {}}
-                          className="mr-2 mt-0.5 accent-amber-500"
-                        />
+                        <Package className="w-5 h-5 mr-2 text-amber-500" />
                         <div>
                           <p className="font-medium">Standard Delivery</p>
                           <p className="text-xs text-gray-500">
-                            {standardDelivery.toLocaleDateString("en-US", {
+                            Arrives by {standardDelivery.toLocaleDateString("en-US", {
                               weekday: "short",
                               month: "short",
                               day: "numeric",
                             })}
                           </p>
                           <p className="text-xs text-gray-700">
-                            {totals.subtotal >= 35 ? "FREE" : "$5.99"}
+                            {totalPrice >= 2000 ? "FREE" : "₹100"}
                           </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div
-                      className={`border rounded-md p-3 cursor-pointer ${
-                        deliveryOption === "express"
-                          ? "border-amber-500 bg-amber-50"
-                          : ""
-                      }`}
-                      onClick={() => handleDeliveryOptionChange("express")}
-                    >
-                      <div className="flex">
-                        <input
-                          type="radio"
-                          checked={deliveryOption === "express"}
-                          onChange={() => {}}
-                          className="mr-2 mt-0.5 accent-amber-500"
-                        />
-                        <div>
-                          <p className="font-medium">Express Delivery</p>
-                          <p className="text-xs text-gray-500">
-                            {expressDelivery.toLocaleDateString("en-US", {
-                              weekday: "short",
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </p>
-                          <p className="text-xs text-gray-700">$9.99</p>
                         </div>
                       </div>
                     </div>
@@ -696,29 +563,6 @@ export default function EnhancedCartPage() {
               </div>
 
               {/* Recently viewed items */}
-              <div className="bg-white p-4 rounded-lg shadow-sm mt-6">
-                <h3 className="font-medium mb-3">Recently viewed items</h3>
-                <div className="space-y-4">
-                  {recommendedProducts.slice(0, 2).map((product) => (
-                    <div key={`recent-${product.id}`} className="flex gap-3">
-                      <div className="w-12 h-12 bg-gray-100 relative rounded flex-shrink-0">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div>
-                        <h4 className="text-sm line-clamp-1">{product.name}</h4>
-                        <p className="text-amber-500 font-bold">
-                          ${product.price}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           )}
         </div>
