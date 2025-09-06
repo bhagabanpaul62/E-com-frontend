@@ -56,21 +56,13 @@ export default function CheckoutPage() {
     let total = totalPrice;
 
     // Add shipping cost
-    if (deliveryOption === "express") {
-      total += 9.99;
-    } else if (deliveryOption === "standard" && totalPrice < 35) {
+    if (totalPrice < 35) {
       total += 5.99;
     }
 
-    // Add tax (estimated as 8.25%)
-    const tax = totalPrice * 0.0825;
-    total += tax;
-
     return {
       subtotal: totalPrice,
-      shipping:
-        deliveryOption === "express" ? 9.99 : totalPrice < 35 ? 5.99 : 0,
-      tax: tax,
+      shipping: totalPrice < 35 ? 5.99 : 0,
       total: total,
     };
   };
@@ -258,19 +250,11 @@ export default function CheckoutPage() {
         <h3 className="font-medium text-lg mt-8 mb-4">Delivery Options</h3>
 
         <div className="space-y-3 mb-6">
-          <div
-            className={`border rounded-md p-3 cursor-pointer ${
-              deliveryOption === "standard"
-                ? "border-amber-500 bg-amber-50"
-                : ""
-            }`}
-            onClick={() => setDeliveryOption("standard")}
-          >
+          <div className="border rounded-md p-3 cursor-pointer border-amber-500 bg-amber-50">
             <div className="flex">
               <input
                 type="radio"
-                checked={deliveryOption === "standard"}
-                onChange={() => {}}
+                checked={true}
                 className="mr-2 mt-0.5 accent-amber-500"
               />
               <div>
@@ -288,59 +272,6 @@ export default function CheckoutPage() {
               </div>
             </div>
           </div>
-
-          <div
-            className={`border rounded-md p-3 cursor-pointer ${
-              deliveryOption === "express" ? "border-amber-500 bg-amber-50" : ""
-            }`}
-            onClick={() => setDeliveryOption("express")}
-          >
-            <div className="flex">
-              <input
-                type="radio"
-                checked={deliveryOption === "express"}
-                onChange={() => {}}
-                className="mr-2 mt-0.5 accent-amber-500"
-              />
-              <div>
-                <p className="font-medium">Express Delivery</p>
-                <p className="text-xs text-gray-500">
-                  {expressDelivery.toLocaleDateString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </p>
-                <p className="text-xs text-gray-700">$9.99</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <h3 className="font-medium text-lg mb-3">Gift Options</h3>
-          <div className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              id="gift-option"
-              checked={isGift}
-              onChange={() => setIsGift(!isGift)}
-              className="mr-2 accent-amber-500"
-            />
-            <label htmlFor="gift-option" className="text-sm">
-              This order contains a gift
-            </label>
-          </div>
-
-          {isGift && (
-            <textarea
-              value={giftMessage}
-              onChange={(e) => setGiftMessage(e.target.value)}
-              className="w-full p-2 border rounded-md text-sm"
-              placeholder="Add a gift message here..."
-              rows={3}
-            />
-          )}
         </div>
 
         <div className="flex justify-between mt-6">
@@ -562,11 +493,6 @@ export default function CheckoutPage() {
               {totals.shipping > 0 ? `$${totals.shipping.toFixed(2)}` : "FREE"}
             </span>
           </div>
-
-          <div className="flex justify-between">
-            <span>Estimated tax:</span>
-            <span>${totals.tax.toFixed(2)}</span>
-          </div>
         </div>
 
         <div className="border-t border-b py-2 my-4">
@@ -580,23 +506,13 @@ export default function CheckoutPage() {
           <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100 text-sm text-blue-800 flex items-start">
             <Truck className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
             <p>
-              {deliveryOption === "standard"
-                ? `Estimated delivery: ${standardDelivery.toLocaleDateString(
-                    "en-US",
-                    { weekday: "long", month: "short", day: "numeric" }
-                  )}`
-                : `Express delivery: ${expressDelivery.toLocaleDateString(
-                    "en-US",
-                    { weekday: "long", month: "short", day: "numeric" }
-                  )}`}
+              Estimated delivery: $
+              {standardDelivery.toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "short",
+                day: "numeric",
+              })}
             </p>
-          </div>
-        )}
-
-        {isGift && (
-          <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-100 text-sm text-green-800 flex items-start">
-            <Gift className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
-            <p>This order includes a gift message</p>
           </div>
         )}
       </div>

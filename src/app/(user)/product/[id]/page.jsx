@@ -29,8 +29,11 @@ import {
   Users,
 } from "lucide-react";
 import axios from "axios";
+import { toast } from "sonner";
 import Review from "@/components/user/product/Review";
 import AddToCartButton from "@/components/user/cart/AddToCartButton";
+import WishlistButton from "@/components/user/product/WishlistButton";
+import SocialShareButton from "@/components/user/shared/SocialShareButton";
 
 const ProductPage = () => {
   const params = useParams();
@@ -571,20 +574,45 @@ const ProductPage = () => {
               >
                 {(product?.totalStock || 0) > 0 ? "Buy Now" : "Out of Stock"}
               </button>
-              {product && (product?.totalStock || 0) > 0 ? (
-                <AddToCartButton
-                  product={product}
-                  variantId={getSelectedVariant()?._id}
-                />
-              ) : (
-                <button
-                  disabled
-                  className="w-full flex items-center justify-center space-x-2 bg-gray-100 border-2 border-gray-300 text-gray-400 cursor-not-allowed py-4 rounded-xl font-semibold text-lg transition-colors"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  <span>Add to Cart</span>
-                </button>
-              )}
+
+              <div className="grid grid-cols-4 gap-3">
+                <div className="col-span-2">
+                  {product && (product?.totalStock || 0) > 0 ? (
+                    <AddToCartButton
+                      product={product}
+                      variantId={getSelectedVariant()?._id}
+                    />
+                  ) : (
+                    <button
+                      disabled
+                      className="w-full flex items-center justify-center space-x-2 bg-gray-100 border-2 border-gray-300 text-gray-400 cursor-not-allowed py-4 rounded-xl font-semibold text-lg transition-colors"
+                    >
+                      <ShoppingCart className="h-5 w-5" />
+                      <span>Add to Cart</span>
+                    </button>
+                  )}
+                </div>
+                <div className="col-span-1">
+                  <WishlistButton
+                    productId={productId}
+                    size="sm"
+                    className="w-full h-full"
+                  />
+                </div>
+                <div className="col-span-1">
+                  <SocialShareButton
+                    title={product?.name || "Check out this product"}
+                    text={
+                      product?.description?.substring(0, 100) ||
+                      "I found this amazing product!"
+                    }
+                    iconOnly
+                    className="w-full h-full"
+                    size="sm"
+                    platforms={["copy", "facebook", "twitter"]}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Service Features */}

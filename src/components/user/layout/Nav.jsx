@@ -179,10 +179,9 @@ export default function Nav({ user }) {
             <IoIosSearch className="text-gray-600 text-xl" />
           </button>
           <div className="relative">
-            <FaShoppingCart className="text-xl text-gray-600" />
-            <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
-              3
-            </span>
+            <Link href="/cart">
+              <CartIcon />
+            </Link>
           </div>
         </div>
 

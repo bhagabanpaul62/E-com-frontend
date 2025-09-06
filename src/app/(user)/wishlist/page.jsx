@@ -1,6 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import axios from "axios";
+import { toast } from "sonner";
+// We could also import API functions from our api folder
+// import { getUserWishlist, removeFromWishlist, clearWishlist } from "@/app/api/wishlist";
+import SocialShareButton from "@/components/user/shared/SocialShareButton";
+import Link from "next/link";
 import {
   Heart,
   ShoppingCart,
@@ -40,7 +46,6 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
 
 const WishlistPage = () => {
@@ -54,123 +59,85 @@ const WishlistPage = () => {
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
 
-  // Mock wishlist data - replace with your API call
+  // Fetch wishlist data from API
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
         setLoading(true);
-        // Replace with your API endpoint
-        // const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/wishlist`, {
-        //   credentials: "include",
-        //   headers: {
-        //     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        //   },
-        // });
 
-        // Mock data for demo
-        const mockWishlistItems = [
-          {
-            _id: "1",
-            productId: {
-              _id: "p1",
-              name: "Premium Wireless Headphones",
-              image:
-                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
-              brand: "Tajbee",
-              category: "Electronics",
-              rating: 4.5,
-              reviewCount: 1250,
-              price: 3999,
-              originalPrice: 4999,
-              discount: 20,
-              inStock: true,
-              stockCount: 15,
-              description:
-                "High-quality wireless headphones with noise cancellation",
-            },
-            addedAt: "2025-08-25T10:00:00Z",
-            priceAtAdded: 4299,
-            priceDropped: true,
-            fastDelivery: true,
-            warranty: "1 Year International Warranty",
-          },
-          {
-            _id: "2",
-            productId: {
-              _id: "p2",
-              name: "Smart Fitness Watch",
-              image:
-                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop",
-              brand: "Tajbee",
-              category: "Wearables",
-              rating: 4.3,
-              reviewCount: 890,
-              price: 2549,
-              originalPrice: 2999,
-              discount: 15,
-              inStock: true,
-              stockCount: 8,
-              description: "Advanced fitness tracking with heart rate monitor",
-            },
-            addedAt: "2025-08-24T15:30:00Z",
-            priceAtAdded: 2549,
-            priceDropped: false,
-            fastDelivery: false,
-            warranty: "1 Year Warranty",
-          },
-          {
-            _id: "3",
-            productId: {
-              _id: "p3",
-              name: "Bluetooth Speaker",
-              image:
-                "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=400&fit=crop",
-              brand: "Tajbee",
-              category: "Audio",
-              rating: 4.7,
-              reviewCount: 654,
-              price: 1499,
-              originalPrice: 1999,
-              discount: 25,
-              inStock: false,
-              stockCount: 0,
-              description: "Portable wireless speaker with rich bass",
-            },
-            addedAt: "2025-08-23T09:15:00Z",
-            priceAtAdded: 1799,
-            priceDropped: true,
-            fastDelivery: true,
-            warranty: "6 Months Warranty",
-          },
-          {
-            _id: "4",
-            productId: {
-              _id: "p4",
-              name: "Gaming Keyboard",
-              image:
-                "https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=400&h=400&fit=crop",
-              brand: "Tajbee",
-              category: "Gaming",
-              rating: 4.6,
-              reviewCount: 432,
-              price: 2999,
-              originalPrice: 3999,
-              discount: 25,
-              inStock: true,
-              stockCount: 25,
-              description: "Mechanical gaming keyboard with RGB lighting",
-            },
-            addedAt: "2025-08-22T14:20:00Z",
-            priceAtAdded: 3299,
-            priceDropped: true,
-            fastDelivery: true,
-            warranty: "2 Year Warranty",
-          },
-        ];
+        // Log the API URL for debugging
+        console.log(
+          "Fetching wishlist from:",
+          `${process.env.NEXT_PUBLIC_SERVER}/api/wishlist`
+        );
 
-        setWishlistItems(mockWishlistItems);
+        // Call the wishlist API
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_SERVER}/api/wishlist`,
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (response.data && response.data.success && response.data.data) {
+          // Log the response data for debugging
+          console.log("Wishlist API response:", response.data);
+
+          // Convert API response to match our component's expected structure
+          const wishlistData = response.data.data.products.map((product) => {
+            console.log(
+              "Processing product:",
+              product._id,
+              product.name,
+              "Images:",
+              product.images,
+              "MainImage:",
+              product.mainImage
+            );
+
+            return {
+              _id: product._id,
+              productId: {
+                _id: product._id,
+                name: product.name,
+                // Use mainImage as the primary source, then fallback to images array
+                image:
+                  product.mainImage ||
+                  (product.images && product.images.length > 0
+                    ? product.images[0]
+                    : ""),
+                images: product.images || [],
+                // Include all variant data
+                variants: product.variants || [],
+                attributes: product.attributes || {},
+                brand: product.brand || "Tajbee",
+                category: product.category?.name || "General",
+                rating: product.rating || 0,
+                reviewCount: product.numReviews || 0,
+                price: product.price || 0,
+                originalPrice: product.mrpPrice || product.price || 0,
+                discount: product.discount || 0,
+                // Check totalStock instead of stock - this is the correct field from the Product model
+                inStock: product.totalStock > 0,
+                stockCount: product.totalStock || 0,
+                description: product.description || "",
+                slug: product.slug || product._id, // Add slug for navigation
+                status: product.status || "active",
+              },
+              addedAt: product.createdAt || new Date().toISOString(),
+              priceDropped: false,
+              fastDelivery: true,
+            };
+          });
+
+          setWishlistItems(wishlistData);
+        } else {
+          setWishlistItems([]);
+          console.log("No wishlist items found or invalid response format");
+        }
       } catch (error) {
         console.error("Error fetching wishlist:", error);
+        setWishlistItems([]);
       } finally {
         setLoading(false);
       }
@@ -179,13 +146,30 @@ const WishlistPage = () => {
     fetchWishlist();
   }, []);
 
-  const removeFromWishlist = (itemId) => {
-    setWishlistItems((prev) => prev.filter((item) => item._id !== itemId));
-    setSelectedItems((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(itemId);
-      return newSet;
-    });
+  const removeFromWishlist = async (itemId) => {
+    try {
+      // Call the API to remove the item
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_SERVER}/api/wishlist/remove/${itemId}`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      // Update local state
+      setWishlistItems((prev) => prev.filter((item) => item._id !== itemId));
+      setSelectedItems((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
+
+      // Show success message
+      toast.success("Item removed from wishlist");
+    } catch (error) {
+      console.error("Error removing item from wishlist:", error);
+      toast.error("Failed to remove item from wishlist");
+    }
   };
 
   const addToCart = (item) => {
@@ -214,12 +198,33 @@ const WishlistPage = () => {
     });
   };
 
-  const bulkRemoveFromWishlist = () => {
-    setWishlistItems((prev) =>
-      prev.filter((item) => !selectedItems.has(item._id))
-    );
-    setSelectedItems(new Set());
-    setShowBulkActions(false);
+  const bulkRemoveFromWishlist = async () => {
+    try {
+      // Remove each selected item from the wishlist
+      const promises = Array.from(selectedItems).map((itemId) =>
+        axios.delete(
+          `${process.env.NEXT_PUBLIC_SERVER}/api/wishlist/remove/${itemId}`,
+          {
+            withCredentials: true,
+          }
+        )
+      );
+
+      await Promise.all(promises);
+
+      // Update local state
+      setWishlistItems((prev) =>
+        prev.filter((item) => !selectedItems.has(item._id))
+      );
+      setSelectedItems(new Set());
+      setShowBulkActions(false);
+
+      // Show success message
+      toast.success("Selected items removed from wishlist");
+    } catch (error) {
+      console.error("Error removing items from wishlist:", error);
+      toast.error("Failed to remove selected items from wishlist");
+    }
   };
 
   const bulkAddToCart = () => {
@@ -318,7 +323,42 @@ const WishlistPage = () => {
                   </div>
                 </div>
               </div>
-
+              {wishlistItems.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <SocialShareButton
+                    title="My Wishlist"
+                    text={`Check out my wishlist with ${wishlistItems.length} items!`}
+                    variant="outline"
+                  />
+                  <button
+                    onClick={async () => {
+                      if (
+                        window.confirm(
+                          "Are you sure you want to clear your entire wishlist?"
+                        )
+                      ) {
+                        try {
+                          await axios.delete(
+                            `${process.env.NEXT_PUBLIC_SERVER}/api/wishlist/clear`,
+                            {
+                              withCredentials: true,
+                            }
+                          );
+                          setWishlistItems([]);
+                          toast.success("Wishlist cleared successfully");
+                        } catch (error) {
+                          console.error("Error clearing wishlist:", error);
+                          toast.error("Failed to clear wishlist");
+                        }
+                      }
+                    }}
+                    className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors flex items-center space-x-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span>Clear All</span>
+                  </button>
+                </div>
+              )}
               <div className="hidden sm:flex items-center space-x-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-gray-900">
@@ -582,11 +622,47 @@ const WishlistPage = () => {
                   <div className="relative">
                     {/* Image Section */}
                     <div className="relative aspect-square overflow-hidden">
-                      <img
-                        src={item.productId.image}
-                        alt={item.productId.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
+                      <Link
+                        href={`/product/${
+                          item.productId.slug || item.productId._id
+                        }`}
+                      >
+                        <img
+                          src={
+                            process.env.NEXT_PUBLIC_SERVER &&
+                            item.productId.mainImage
+                              ? `${
+                                  process.env.NEXT_PUBLIC_SERVER
+                                }/${item.productId.mainImage.replace(
+                                  /^\//,
+                                  ""
+                                )}`
+                              : item.productId.image &&
+                                !item.productId.image.startsWith("http")
+                              ? `${
+                                  process.env.NEXT_PUBLIC_SERVER
+                                }/${item.productId.image.replace(/^\//, "")}`
+                              : item.productId.image ||
+                                (item.productId.images &&
+                                item.productId.images.length > 0
+                                  ? item.productId.images[0].startsWith("http")
+                                    ? item.productId.images[0]
+                                    : `${
+                                        process.env.NEXT_PUBLIC_SERVER
+                                      }/${item.productId.images[0].replace(
+                                        /^\//,
+                                        ""
+                                      )}`
+                                  : "/placeholder.jpg")
+                          }
+                          alt={item.productId.name}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/placeholder.jpg";
+                          }}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </Link>
 
                       {/* Overlay Labels */}
                       <div className="absolute top-3 left-3 space-y-2">
@@ -623,21 +699,53 @@ const WishlistPage = () => {
                         <button className="p-2 bg-white text-gray-600 rounded-full shadow-lg hover:bg-gray-100 transition-colors">
                           <Share2 className="h-4 w-4" />
                         </button>
-                        <button className="p-2 bg-white text-gray-600 rounded-full shadow-lg hover:bg-gray-100 transition-colors">
-                          <Eye className="h-4 w-4" />
-                        </button>
+                        <Link
+                          href={`/product/${
+                            item.productId.slug || item.productId._id
+                          }`}
+                        >
+                          <button className="p-2 bg-white text-gray-600 rounded-full shadow-lg hover:bg-gray-100 transition-colors">
+                            <Eye className="h-4 w-4" />
+                          </button>
+                        </Link>
                       </div>
                     </div>
 
                     {/* Content Section */}
                     <div className="p-4">
                       <div className="mb-2">
-                        <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-amber-600 transition-colors">
-                          {item.productId.name}
-                        </h3>
+                        <Link
+                          href={`/product/${
+                            item.productId.slug || item.productId._id
+                          }`}
+                        >
+                          <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-amber-600 transition-colors">
+                            {item.productId.name}
+                          </h3>
+                        </Link>
                         <p className="text-amber-600 text-sm font-medium">
                           {item.productId.brand}
                         </p>
+                        {item.productId.variants &&
+                          item.productId.variants.length > 0 && (
+                            <div className="mt-1 text-xs text-gray-600">
+                              {Object.entries(
+                                item.productId.variants[0]?.attributes || {}
+                              ).map(([key, value], index) => (
+                                <span key={key} className="inline-block mr-2">
+                                  {key}:{" "}
+                                  <span className="font-medium">{value}</span>
+                                  {index <
+                                  Object.keys(
+                                    item.productId.variants[0]?.attributes || {}
+                                  ).length -
+                                    1
+                                    ? ", "
+                                    : ""}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                       </div>
 
                       {/* Rating */}
@@ -714,13 +822,51 @@ const WishlistPage = () => {
                               : "Out of Stock"}
                           </span>
                         </button>
-                        <button
-                          onClick={() => removeFromWishlist(item._id)}
-                          className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span>Remove</span>
-                        </button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => removeFromWishlist(item._id)}
+                            className="border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
+                            title="Remove from wishlist"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              try {
+                                const productUrl = `${
+                                  window.location.origin
+                                }/product/${
+                                  item.productId.slug || item.productId._id
+                                }`;
+                                if (navigator.share) {
+                                  navigator
+                                    .share({
+                                      title: item.productId.name,
+                                      text: `Check out this product: ${item.productId.name}`,
+                                      url: productUrl,
+                                    })
+                                    .then(() => toast.success("Product shared"))
+                                    .catch((error) => {
+                                      console.error("Error sharing:", error);
+                                      navigator.clipboard.writeText(productUrl);
+                                      toast.success("Product link copied");
+                                    });
+                                } else {
+                                  navigator.clipboard.writeText(productUrl);
+                                  toast.success("Product link copied");
+                                }
+                              } catch (error) {
+                                console.error("Share error:", error);
+                                toast.error("Couldn't share product");
+                              }
+                            }}
+                            className="border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
+                            title="Share product"
+                          >
+                            <Share2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -740,11 +886,49 @@ const WishlistPage = () => {
 
                       {/* Image */}
                       <div className="relative">
-                        <img
-                          src={item.productId.image}
-                          alt={item.productId.name}
-                          className="w-24 h-24 object-cover rounded-lg border border-gray-200"
-                        />
+                        <Link
+                          href={`/product/${
+                            item.productId.slug || item.productId._id
+                          }`}
+                        >
+                          <img
+                            src={
+                              process.env.NEXT_PUBLIC_SERVER &&
+                              item.productId.mainImage
+                                ? `${
+                                    process.env.NEXT_PUBLIC_SERVER
+                                  }/${item.productId.mainImage.replace(
+                                    /^\//,
+                                    ""
+                                  )}`
+                                : item.productId.image &&
+                                  !item.productId.image.startsWith("http")
+                                ? `${
+                                    process.env.NEXT_PUBLIC_SERVER
+                                  }/${item.productId.image.replace(/^\//, "")}`
+                                : item.productId.image ||
+                                  (item.productId.images &&
+                                  item.productId.images.length > 0
+                                    ? item.productId.images[0].startsWith(
+                                        "http"
+                                      )
+                                      ? item.productId.images[0]
+                                      : `${
+                                          process.env.NEXT_PUBLIC_SERVER
+                                        }/${item.productId.images[0].replace(
+                                          /^\//,
+                                          ""
+                                        )}`
+                                    : "/placeholder.jpg")
+                            }
+                            alt={item.productId.name}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/placeholder.jpg";
+                            }}
+                            className="w-24 h-24 object-cover rounded-lg border border-gray-200"
+                          />
+                        </Link>
                         {!item.productId.inStock && (
                           <div className="absolute inset-0 bg-red-500 bg-opacity-20 rounded-lg flex items-center justify-center">
                             <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
@@ -758,12 +942,45 @@ const WishlistPage = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1">
-                              {item.productId.name}
-                            </h3>
+                            <Link
+                              href={`/product/${
+                                item.productId.slug || item.productId._id
+                              }`}
+                            >
+                              <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1 hover:text-amber-600 transition-colors">
+                                {item.productId.name}
+                              </h3>
+                            </Link>
                             <p className="text-amber-600 font-medium text-sm">
                               {item.productId.brand}
                             </p>
+
+                            {item.productId.variants &&
+                              item.productId.variants.length > 0 && (
+                                <div className="mt-1 text-xs text-gray-600">
+                                  {Object.entries(
+                                    item.productId.variants[0]?.attributes || {}
+                                  ).map(([key, value], index) => (
+                                    <span
+                                      key={key}
+                                      className="inline-block mr-2"
+                                    >
+                                      {key}:{" "}
+                                      <span className="font-medium">
+                                        {value}
+                                      </span>
+                                      {index <
+                                      Object.keys(
+                                        item.productId.variants[0]
+                                          ?.attributes || {}
+                                      ).length -
+                                        1
+                                        ? ", "
+                                        : ""}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
 
                             {/* Rating */}
                             <div className="flex items-center space-x-2 mt-2">
@@ -857,7 +1074,43 @@ const WishlistPage = () => {
                                   : "Out of Stock"}
                               </span>
                             </button>
-                            <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                try {
+                                  const productUrl = `${
+                                    window.location.origin
+                                  }/product/${
+                                    item.productId.slug || item.productId._id
+                                  }`;
+                                  if (navigator.share) {
+                                    navigator
+                                      .share({
+                                        title: item.productId.name,
+                                        text: `Check out this product: ${item.productId.name}`,
+                                        url: productUrl,
+                                      })
+                                      .then(() =>
+                                        toast.success("Product shared")
+                                      )
+                                      .catch((error) => {
+                                        console.error("Error sharing:", error);
+                                        navigator.clipboard.writeText(
+                                          productUrl
+                                        );
+                                        toast.success("Product link copied");
+                                      });
+                                  } else {
+                                    navigator.clipboard.writeText(productUrl);
+                                    toast.success("Product link copied");
+                                  }
+                                } catch (error) {
+                                  console.error("Share error:", error);
+                                  toast.error("Couldn't share product");
+                                }
+                              }}
+                              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            >
                               <Share2 className="h-5 w-5" />
                             </button>
                             <button
