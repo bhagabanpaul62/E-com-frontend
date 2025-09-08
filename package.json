@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:fix": "cross-env NODE_OPTIONS=--max-http-header-size=81920 next dev --turbopack",
     "build": "next build",
     "start": "next start -p 8080",
-    "lint": "next lint"
+    "lint": "next lint",
+    "clean": "rimraf .next"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.3",
@@ -40,8 +42,10 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "cross-env": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.6"
   }

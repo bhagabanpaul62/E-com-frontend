@@ -204,8 +204,19 @@ const ProductPage = () => {
   };
 
   const handleBuyNow = () => {
-    // Buy now logic
+    // Get selected variant
     const variant = getSelectedVariant();
+    
+    // Check if logged in
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      toast.error("Please log in to continue with checkout");
+      // Redirect to login with return URL
+      window.location.href = `/login?redirect=/product/${productId}`;
+      return;
+    }
+    
+    // Log buy now action
     console.log("Buy now:", {
       productId,
       variantId: variant?._id,
@@ -213,7 +224,9 @@ const ProductPage = () => {
       price: getCurrentPrice(),
       quantity,
     });
-    // Redirect to checkout
+    
+    // Redirect to direct checkout page
+    window.location.href = `/direct-checkout/${productId}`;
   };
 
   const toggleWishlist = () => {

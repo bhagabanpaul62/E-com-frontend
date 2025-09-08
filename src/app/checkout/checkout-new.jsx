@@ -215,12 +215,6 @@ export default function CheckoutPage() {
     try {
       const token = localStorage.getItem("accessToken");
 
-      if (!token) {
-        alert("You need to be logged in to place an order");
-        router.push("/login");
-        return;
-      }
-
       if (paymentMethod === "cod") {
         // Create order directly for COD
         const orderResponse = await fetch(
@@ -254,13 +248,6 @@ export default function CheckoutPage() {
           return;
         }
 
-        // Log request details for debugging
-        console.log("Making Razorpay order request:", {
-          url: `${process.env.NEXT_PUBLIC_API_URL}/api/orders/create-razorpay-order`,
-          amount: totals.total,
-          token: token ? "Token present" : "Token missing",
-        });
-
         // Create Razorpay order
         const razorpayOrderResponse = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/orders/create-razorpay-order`,
@@ -277,100 +264,45 @@ export default function CheckoutPage() {
           }
         );
 
-        // For debugging: log full response details
-        console.log("Razorpay response status:", razorpayOrderResponse.status, razorpayOrderResponse.statusText);
-        
-        // Try to get response text first for debugging
-        const responseText = await razorpayOrderResponse.text();
-        console.log("Razorpay raw response:", responseText);
-        
         if (!razorpayOrderResponse.ok) {
-          // Try to parse the response as JSON if possible
-          let errorData;
-          try {
-            errorData = JSON.parse(responseText);
-          } catch (e) {
-            console.error("Error parsing response:", e);
-            errorData = { message: "Error parsing response", raw: responseText };
-          }
-          
-          console.error("Razorpay order creation failed:", errorData);
-          const errorMsg =
-            errorData.message ||
-            errorData.error ||
-            razorpayOrderResponse.statusText ||
-            "Unknown error";
-          console.error("Detailed error:", errorMsg);
-          throw new Error(`Failed to create payment order: ${errorMsg}`);
+          throw new Error("Failed to create payment order");
         }
-        
-        // Parse the response text as JSON
-        const razorpayOrderData = JSON.parse(responseText);
 
-        // Log the key to ensure it's available
-        console.log(
-          "Using Razorpay Key:",
-          process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
-        );
-        
-        // Log the Razorpay order details for debugging
-        console.log("Razorpay order data:", razorpayOrderData);
+        const razorpayOrderData = await razorpayOrderResponse.json();
 
-        // Ensure we're using the latest key directly from the environment
-        console.log("Setting up Razorpay payment with key:", process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID);
-        
         const options = {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: razorpayOrderData.data.amount,
           currency: razorpayOrderData.data.currency,
-          name: "Your E-commerce Store",
+          name: "Your Store",
           description: "Order Payment",
           order_id: razorpayOrderData.data.id,
-          image:
-            "https://res.cloudinary.com/dtewakucf/image/upload/v1/logo.png",
           handler: async function (response) {
-            try {
-              console.log("Payment successful:", response);
-
-              // Create order after successful payment
-              const orderResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/orders/create`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                  },
-                  body: JSON.stringify({
-                    shippingAddressId: selectedAddress._id,
-                    paymentMethod: paymentMethod.toUpperCase(),
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature,
-                    deliveryType: "Normal",
-                  }),
-                }
-              );
-
-              if (orderResponse.ok) {
-                const orderData = await orderResponse.json();
-                router.push(
-                  `/order-confirmation?orderId=${orderData.data._id}`
-                );
-              } else {
-                const errorData = await orderResponse.json().catch(() => ({}));
-                console.error("Order creation failed:", errorData);
-                alert(
-                  `Failed to create order: ${
-                    errorData.message || orderResponse.statusText
-                  }`
-                );
+            // Create order after successful payment
+            const orderResponse = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/api/orders/create`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  shippingAddressId: selectedAddress._id,
+                  paymentMethod: paymentMethod.toUpperCase(),
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  deliveryType: "Normal",
+                }),
               }
-            } catch (error) {
-              console.error("Payment handling error:", error);
-              alert(
-                "There was an error processing your payment. Please try again."
-              );
+            );
+
+            if (orderResponse.ok) {
+              const orderData = await orderResponse.json();
+              router.push(`/order-confirmation?orderId=${orderData.data._id}`);
+            } else {
+              throw new Error("Failed to create order");
             }
           },
           prefill: {
@@ -381,16 +313,6 @@ export default function CheckoutPage() {
           theme: {
             color: "#f59e0b",
           },
-          modal: {
-            ondismiss: function () {
-              setOrderLoading(false);
-              console.log("Payment modal closed");
-              alert("Payment canceled. You can try again when you're ready.");
-            },
-          },
-          notes: {
-            address: `${selectedAddress.streetAddress}, ${selectedAddress.city}, ${selectedAddress.State}`,
-          },
         };
 
         const paymentObject = new window.Razorpay(options);
@@ -398,30 +320,7 @@ export default function CheckoutPage() {
       }
     } catch (error) {
       console.error("Error placing order:", error);
-
-      // Extract and display more detailed error information
-      let errorMessage = "Failed to place order. ";
-
-      if (error.message) {
-        errorMessage += error.message;
-      }
-
-      // Check for network-related errors
-      if (!navigator.onLine) {
-        errorMessage += " Please check your internet connection.";
-      }
-
-      // Check if it's a Razorpay-specific error
-      if (error.error && error.error.description) {
-        errorMessage += ` Razorpay error: ${error.error.description}`;
-      }
-
-      // Log additional details to help debug
-      console.log("Razorpay Key ID:", process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID);
-      console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
-      console.log("Order total:", totals.total);
-
-      alert(errorMessage);
+      alert("Failed to place order. Please try again.");
     } finally {
       setOrderLoading(false);
     }
@@ -880,35 +779,24 @@ export default function CheckoutPage() {
         <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
           {items.map((item) => (
             <div
-              key={`${item.product?._id || item.productId}-${
-                item.variantId || "default"
-              }`}
+              key={`${item.productId}-${item.variantId || "default"}`}
               className="flex items-center space-x-3 p-2 border-b"
             >
               <div className="relative w-12 h-12 flex-shrink-0">
                 <Image
-                  src={
-                    item.product?.mainImage ||
-                    item.product?.images?.[0] ||
-                    "/api/placeholder/48/48"
-                  }
-                  alt={item.product?.name || "Product"}
+                  src={item.mainImage || "/api/placeholder/48/48"}
+                  alt={item.name}
                   fill
                   className="object-cover rounded-md"
                 />
               </div>
               <div className="flex-1">
-                <p className="font-medium text-sm line-clamp-2">
-                  {item.product?.name || "Product"}
-                </p>
+                <p className="font-medium text-sm line-clamp-2">{item.name}</p>
                 <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
               </div>
               <div className="text-right">
                 <p className="font-medium">
-                  ₹
-                  {(
-                    (item.priceAtAdd || item.product?.price) * item.quantity
-                  ).toFixed(2)}
+                  ₹{(item.priceAtAdd * item.quantity).toFixed(2)}
                 </p>
               </div>
             </div>
