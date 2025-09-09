@@ -24,13 +24,33 @@ import Image from "next/image";
 import { toast } from "react-hot-toast";
 import { use } from "react";
 
+// Function to dynamically load Razorpay script
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (typeof window !== "undefined" && window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => {
+      resolve(true);
+    };
+    script.onerror = () => {
+      resolve(false);
+    };
+    document.body.appendChild(script);
+  });
+};
+
 export default function DirectCheckoutPage({ params }) {
   // Use React.use to unwrap the params promise in Next.js 15
   const unwrappedParams = use(params);
   const productId = unwrappedParams.id;
   const { user } = useSelector((state) => state.user);
   const router = useRouter();
-  
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(1);
@@ -61,22 +81,25 @@ export default function DirectCheckoutPage({ params }) {
         console.error("No product ID available yet");
         return;
       }
-      
+
       try {
         setLoading(true);
         console.log("Fetching product with ID:", productId);
-        console.log("API URL:", `${process.env.NEXT_PUBLIC_API_URL}/api/products/${productId}`);
-        
+        console.log(
+          "API URL:",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/products/${productId}`
+        );
+
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/products/${productId}`
         );
-        
+
         if (!response.ok) {
           const errorText = await response.text();
           console.error("API error response:", errorText);
           throw new Error("Product not found");
         }
-        
+
         const data = await response.json();
         console.log("Product data received:", data);
         setProduct(data.data);
@@ -88,7 +111,7 @@ export default function DirectCheckoutPage({ params }) {
         setLoading(false);
       }
     };
-    
+
     // Fetch user addresses
     fetchAddresses();
     fetchProductDetails();
@@ -130,12 +153,12 @@ export default function DirectCheckoutPage({ params }) {
 
   const calculateTotal = () => {
     if (!product) return { subtotal: 0, shipping: 0, total: 0 };
-    
+
     const price = product.price;
-    const finalPrice = product.discountPercentage 
-      ? price * (1 - product.discountPercentage / 100) 
+    const finalPrice = product.discountPercentage
+      ? price * (1 - product.discountPercentage / 100)
       : price;
-      
+
     const subTotal = finalPrice;
     const shippingCharges = subTotal < 500 ? 40 : 0;
     const total = subTotal + shippingCharges;
@@ -187,7 +210,9 @@ export default function DirectCheckoutPage({ params }) {
           isDefault: false,
         });
 
-        toast.success(editingAddress ? "Address updated!" : "New address added!");
+        toast.success(
+          editingAddress ? "Address updated!" : "New address added!"
+        );
 
         // If it's a new address and set as default, select it
         if (!editingAddress && addressForm.isDefault) {
@@ -251,7 +276,7 @@ export default function DirectCheckoutPage({ params }) {
       document.body.appendChild(script);
     });
   };
-  
+
   // Function to handle direct checkout from product page
   const handleDirectCheckout = async () => {
     if (!productId || !selectedAddress) {
@@ -260,7 +285,7 @@ export default function DirectCheckoutPage({ params }) {
     }
 
     setOrderLoading(true);
-    
+
     // Log the API URL and environment variables for debugging
     console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
     console.log("Product ID:", productId);
@@ -270,18 +295,18 @@ export default function DirectCheckoutPage({ params }) {
       // First fetch the product details
       const productUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/products/${productId}`;
       console.log("Fetching product from:", productUrl);
-      
+
       const productResponse = await fetch(productUrl);
-      
+
       if (!productResponse.ok) {
         console.error("Product fetch error:", await productResponse.text());
         throw new Error("Failed to fetch product details");
       }
-      
+
       const productData = await productResponse.json();
       console.log("Product data:", productData);
       const product = productData.data;
-      
+
       const token = localStorage.getItem("accessToken");
       if (!token) {
         router.push(`/login?redirect=/direct-checkout/${productId}`);
@@ -293,16 +318,16 @@ export default function DirectCheckoutPage({ params }) {
         // Create order directly for COD
         const orderUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/orders/create-direct`;
         console.log("Creating order at URL:", orderUrl);
-        
+
         const orderPayload = {
           shippingAddressId: selectedAddress._id,
           paymentMethod: "COD",
           deliveryType: "Normal",
           productId: productId,
-          quantity: 1
+          quantity: 1,
         };
         console.log("Order payload:", orderPayload);
-        
+
         const orderResponse = await fetch(orderUrl, {
           method: "POST",
           headers: {
@@ -316,15 +341,18 @@ export default function DirectCheckoutPage({ params }) {
         const responseText = await orderResponse.text();
         console.log("Order response status:", orderResponse.status);
         console.log("Order response:", responseText);
-        
+
         if (orderResponse.ok) {
           try {
             // Parse the response as JSON
             const orderData = JSON.parse(responseText);
             console.log("Order data:", orderData);
-            
+
             if (orderData && orderData.data && orderData.data._id) {
-              console.log("Redirecting to order confirmation:", `/order-confirmation?orderId=${orderData.data._id}`);
+              console.log(
+                "Redirecting to order confirmation:",
+                `/order-confirmation?orderId=${orderData.data._id}`
+              );
               router.push(`/order-confirmation?orderId=${orderData.data._id}`);
             } else {
               console.error("Invalid order data structure:", orderData);
@@ -335,7 +363,10 @@ export default function DirectCheckoutPage({ params }) {
             throw new Error("Failed to parse order response");
           }
         } else {
-          console.error("Order creation failed with status:", orderResponse.status);
+          console.error(
+            "Order creation failed with status:",
+            orderResponse.status
+          );
           throw new Error(`Failed to create order: ${responseText}`);
         }
       } else {
@@ -346,7 +377,7 @@ export default function DirectCheckoutPage({ params }) {
           toast.error("Failed to load payment gateway");
           return;
         }
-        
+
         // Calculate amount from product price
         const amount = product.price;
         const shippingCharges = amount < 500 ? 40 : 0;
@@ -371,7 +402,9 @@ export default function DirectCheckoutPage({ params }) {
         if (!razorpayOrderResponse.ok) {
           const errorText = await razorpayOrderResponse.text();
           console.error("Razorpay error response:", errorText);
-          throw new Error(`Failed to create payment order: ${razorpayOrderResponse.statusText}`);
+          throw new Error(
+            `Failed to create payment order: ${razorpayOrderResponse.statusText}`
+          );
         }
 
         const razorpayOrderData = await razorpayOrderResponse.json();
@@ -389,7 +422,8 @@ export default function DirectCheckoutPage({ params }) {
           name: "Your E-commerce Store",
           description: "Direct Product Purchase",
           order_id: razorpayOrderData.data.id,
-          image: "https://res.cloudinary.com/dtewakucf/image/upload/v1/logo.png",
+          image:
+            "https://res.cloudinary.com/dtewakucf/image/upload/v1/logo.png",
           handler: async function (response) {
             try {
               // Create order after successful payment
@@ -409,24 +443,30 @@ export default function DirectCheckoutPage({ params }) {
                     razorpay_signature: response.razorpay_signature,
                     deliveryType: "Normal",
                     productId: productId,
-                    quantity: 1
+                    quantity: 1,
                   }),
                 }
               );
 
               if (orderResponse.ok) {
                 const orderData = await orderResponse.json();
-                router.push(`/order-confirmation?orderId=${orderData.data._id}`);
+                router.push(
+                  `/order-confirmation?orderId=${orderData.data._id}`
+                );
               } else {
                 const errorData = await orderResponse.json().catch(() => ({}));
                 console.error("Order creation failed:", errorData);
                 toast.error(
-                  `Failed to create order: ${errorData.message || orderResponse.statusText}`
+                  `Failed to create order: ${
+                    errorData.message || orderResponse.statusText
+                  }`
                 );
               }
             } catch (error) {
               console.error("Payment handling error:", error);
-              toast.error("There was an error processing your payment. Please try again.");
+              toast.error(
+                "There was an error processing your payment. Please try again."
+              );
             }
           },
           prefill: {
@@ -440,11 +480,15 @@ export default function DirectCheckoutPage({ params }) {
           modal: {
             ondismiss: function () {
               setOrderLoading(false);
-              toast.info("Payment canceled. You can try again when you're ready.");
+              toast.info(
+                "Payment canceled. You can try again when you're ready."
+              );
             },
           },
           notes: {
-            address: selectedAddress ? `${selectedAddress.streetAddress}, ${selectedAddress.city}, ${selectedAddress.State}` : "",
+            address: selectedAddress
+              ? `${selectedAddress.streetAddress}, ${selectedAddress.city}, ${selectedAddress.State}`
+              : "",
           },
         };
 
@@ -477,12 +521,14 @@ export default function DirectCheckoutPage({ params }) {
       </div>
     );
   }
-  
+
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Product not found</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Product not found
+          </h2>
           <Link href="/products" className="text-amber-600 hover:underline">
             Browse products
           </Link>
@@ -490,7 +536,7 @@ export default function DirectCheckoutPage({ params }) {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -504,7 +550,9 @@ export default function DirectCheckoutPage({ params }) {
           </Link>
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Express Checkout</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">
+          Express Checkout
+        </h1>
 
         {/* Stepper */}
         <div className="flex mb-8">
@@ -544,7 +592,9 @@ export default function DirectCheckoutPage({ params }) {
                 {/* Address Selection */}
                 <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold">Select Delivery Address</h2>
+                    <h2 className="text-xl font-bold">
+                      Select Delivery Address
+                    </h2>
                     <Button
                       variant="outline"
                       size="sm"
@@ -604,7 +654,9 @@ export default function DirectCheckoutPage({ params }) {
                               </span>
                               <div className="ml-2 px-2 py-0.5 text-xs rounded-md bg-gray-200 text-gray-800 flex items-center">
                                 {getAddressTypeIcon(address.AddressType)}
-                                <span className="ml-1">{address.AddressType}</span>
+                                <span className="ml-1">
+                                  {address.AddressType}
+                                </span>
                               </div>
                               {address.isDefault && (
                                 <div className="ml-2 px-2 py-0.5 text-xs rounded-md bg-amber-100 text-amber-800">
@@ -617,7 +669,8 @@ export default function DirectCheckoutPage({ params }) {
                           <div className="text-sm text-gray-700">
                             <p>{address.streetAddress}</p>
                             <p>
-                              {address.city}, {address.State} - {address.PinCode}
+                              {address.city}, {address.State} -{" "}
+                              {address.PinCode}
                             </p>
                             {address.landmark && (
                               <p className="text-gray-500">

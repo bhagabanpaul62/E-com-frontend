@@ -278,12 +278,16 @@ export default function CheckoutPage() {
         );
 
         // For debugging: log full response details
-        console.log("Razorpay response status:", razorpayOrderResponse.status, razorpayOrderResponse.statusText);
-        
+        console.log(
+          "Razorpay response status:",
+          razorpayOrderResponse.status,
+          razorpayOrderResponse.statusText
+        );
+
         // Try to get response text first for debugging
         const responseText = await razorpayOrderResponse.text();
         console.log("Razorpay raw response:", responseText);
-        
+
         if (!razorpayOrderResponse.ok) {
           // Try to parse the response as JSON if possible
           let errorData;
@@ -291,9 +295,12 @@ export default function CheckoutPage() {
             errorData = JSON.parse(responseText);
           } catch (e) {
             console.error("Error parsing response:", e);
-            errorData = { message: "Error parsing response", raw: responseText };
+            errorData = {
+              message: "Error parsing response",
+              raw: responseText,
+            };
           }
-          
+
           console.error("Razorpay order creation failed:", errorData);
           const errorMsg =
             errorData.message ||
@@ -303,7 +310,7 @@ export default function CheckoutPage() {
           console.error("Detailed error:", errorMsg);
           throw new Error(`Failed to create payment order: ${errorMsg}`);
         }
-        
+
         // Parse the response text as JSON
         const razorpayOrderData = JSON.parse(responseText);
 
@@ -312,13 +319,16 @@ export default function CheckoutPage() {
           "Using Razorpay Key:",
           process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
         );
-        
+
         // Log the Razorpay order details for debugging
         console.log("Razorpay order data:", razorpayOrderData);
 
         // Ensure we're using the latest key directly from the environment
-        console.log("Setting up Razorpay payment with key:", process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID);
-        
+        console.log(
+          "Setting up Razorpay payment with key:",
+          process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
+        );
+
         const options = {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: razorpayOrderData.data.amount,

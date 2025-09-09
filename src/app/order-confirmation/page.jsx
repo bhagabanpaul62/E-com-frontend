@@ -23,7 +23,7 @@ export default function OrderConfirmationPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
-  
+
   console.log("Order confirmation page loaded with order ID:", orderId);
 
   useEffect(() => {
@@ -50,8 +50,11 @@ export default function OrderConfirmationPage() {
       }
 
       console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
-      console.log("Requesting order details from:", `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}`);
-      
+      console.log(
+        "Requesting order details from:",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}`
+      );
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}`,
         {
@@ -62,7 +65,7 @@ export default function OrderConfirmationPage() {
       );
 
       console.log("Order API response status:", response.status);
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log("Order data received:", data.data);

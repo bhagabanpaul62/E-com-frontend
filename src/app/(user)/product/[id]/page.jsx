@@ -206,7 +206,7 @@ const ProductPage = () => {
   const handleBuyNow = () => {
     // Get selected variant
     const variant = getSelectedVariant();
-    
+
     // Check if logged in
     const token = localStorage.getItem("accessToken");
     if (!token) {
@@ -215,7 +215,7 @@ const ProductPage = () => {
       window.location.href = `/login?redirect=/product/${productId}`;
       return;
     }
-    
+
     // Log buy now action
     console.log("Buy now:", {
       productId,
@@ -224,7 +224,7 @@ const ProductPage = () => {
       price: getCurrentPrice(),
       quantity,
     });
-    
+
     // Redirect to direct checkout page
     window.location.href = `/direct-checkout/${productId}`;
   };
