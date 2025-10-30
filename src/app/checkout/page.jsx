@@ -90,19 +90,48 @@ export default function CheckoutPage() {
     }
   };
 
-  const calculateTotal = () => {
-    const subTotal = totalPrice;
-    const shippingCharges = subTotal < 500 ? 40 : 0;
-    const total = subTotal + shippingCharges;
+  // State to hold order totals from the backend
+  const [totals, setTotals] = useState({
+    subtotal: 0,
+    shipping: 0,
+    total: 0,
+  });
 
-    return {
-      subtotal: subTotal,
-      shipping: shippingCharges,
-      total: total,
-    };
+  // Fetch order totals from the backend
+  const fetchOrderTotals = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/calculate-totals`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setTotals(data.data);
+      } else {
+        console.error("Failed to fetch order totals");
+      }
+    } catch (error) {
+      console.error("Error fetching order totals:", error);
+    }
   };
 
-  const totals = calculateTotal();
+  // Fetch totals when component mounts or when cart changes
+  useEffect(() => {
+    if (user) {
+      fetchOrderTotals();
+    }
+  }, [items, user]);
 
   const handleAddressSubmit = async (e) => {
     e.preventDefault();
@@ -257,11 +286,10 @@ export default function CheckoutPage() {
         // Log request details for debugging
         console.log("Making Razorpay order request:", {
           url: `${process.env.NEXT_PUBLIC_API_URL}/api/orders/create-razorpay-order`,
-          amount: totals.total,
           token: token ? "Token present" : "Token missing",
         });
 
-        // Create Razorpay order
+        // Create Razorpay order (backend will calculate the amount)
         const razorpayOrderResponse = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/orders/create-razorpay-order`,
           {
@@ -271,7 +299,6 @@ export default function CheckoutPage() {
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-              amount: totals.total,
               currency: "INR",
             }),
           }
@@ -333,8 +360,8 @@ export default function CheckoutPage() {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: razorpayOrderData.data.amount,
           currency: razorpayOrderData.data.currency,
-          name: "Your E-commerce Store",
-          description: "Order Payment",
+          name: "Tajbee",
+          description: "Tajbee Order Payment",
           order_id: razorpayOrderData.data.id,
           image:
             "https://res.cloudinary.com/dtewakucf/image/upload/v1/logo.png",
@@ -353,7 +380,7 @@ export default function CheckoutPage() {
                   },
                   body: JSON.stringify({
                     shippingAddressId: selectedAddress._id,
-                    paymentMethod: paymentMethod.toUpperCase(),
+                    paymentMethod: "ONLINE",
                     razorpay_order_id: response.razorpay_order_id,
                     razorpay_payment_id: response.razorpay_payment_id,
                     razorpay_signature: response.razorpay_signature,
@@ -794,32 +821,13 @@ export default function CheckoutPage() {
               <div>
                 <p className="font-medium flex items-center">
                   <CreditCard className="mr-2 w-4 h-4" />
-                  Credit/Debit Card
+                  Online Payment
                 </p>
                 <p className="text-xs text-gray-500">
-                  Secure payment via Razorpay
+                  Credit Card, Debit Card, UPI, Net Banking & more
                 </p>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`border rounded-md p-3 cursor-pointer ${
-              paymentMethod === "upi" ? "border-amber-500 bg-amber-50" : ""
-            }`}
-            onClick={() => setPaymentMethod("upi")}
-          >
-            <div className="flex">
-              <input
-                type="radio"
-                checked={paymentMethod === "upi"}
-                onChange={() => {}}
-                className="mr-2 mt-0.5 accent-amber-500"
-              />
-              <div>
-                <p className="font-medium">UPI</p>
-                <p className="text-xs text-gray-500">
-                  Pay using UPI apps like GPay, PhonePe, Paytm
+                <p className="text-xs text-green-600 mt-1">
+                  Secure payment via Tajbee Payment Gateway
                 </p>
               </div>
             </div>
@@ -933,9 +941,7 @@ export default function CheckoutPage() {
 
           <div className="flex justify-between">
             <span>Shipping & handling:</span>
-            <span>
-              {totals.shipping > 0 ? `₹${totals.shipping.toFixed(2)}` : "FREE"}
-            </span>
+            <span>FREE</span>
           </div>
         </div>
 
@@ -971,11 +977,7 @@ export default function CheckoutPage() {
             </div>
             <p className="mt-1 text-xs">
               Payment method:{" "}
-              {paymentMethod === "cod"
-                ? "Cash on Delivery"
-                : paymentMethod === "card"
-                ? "Credit/Debit Card"
-                : "UPI"}
+              {paymentMethod === "cod" ? "Cash on Delivery" : "Online Payment"}
             </p>
           </div>
         )}

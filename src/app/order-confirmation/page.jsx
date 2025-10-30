@@ -437,10 +437,10 @@ export default function OrderConfirmationPage() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/(user)/order">
-            <Button variant="outline" className="flex items-center">
+            <Link href="/order"  className="flex items-center">
               <Package className="mr-2 w-4 h-4" />
               View All Orders
-            </Button>
+            </Link>
           </Link>
           <Link href="/">
             <Button className="bg-amber-500 hover:bg-amber-600 flex items-center">

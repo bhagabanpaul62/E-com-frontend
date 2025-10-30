@@ -203,7 +203,13 @@ const ProductPage = () => {
     // Show success message or redirect to cart
   };
 
-  const handleBuyNow = () => {
+  const [buyingNow, setBuyingNow] = useState(false);
+
+  const handleBuyNow = async () => {
+    if (buyingNow) return; // Prevent multiple clicks
+
+    setBuyingNow(true);
+
     // Get selected variant
     const variant = getSelectedVariant();
 
@@ -213,6 +219,7 @@ const ProductPage = () => {
       toast.error("Please log in to continue with checkout");
       // Redirect to login with return URL
       window.location.href = `/login?redirect=/product/${productId}`;
+      setBuyingNow(false);
       return;
     }
 
@@ -225,8 +232,38 @@ const ProductPage = () => {
       quantity,
     });
 
-    // Redirect to direct checkout page
-    window.location.href = `/direct-checkout/${productId}`;
+    try {
+      // Show loading toast
+      const loadingToast = toast.loading("Preparing your express checkout...");
+
+      // Create temporary cart/session data in localStorage for direct checkout
+      const buyNowData = {
+        productId,
+        variantId: variant?._id,
+        quantity,
+        price: getCurrentPrice(),
+        name: product.name,
+        image: product.mainImage,
+        timestamp: Date.now(),
+      };
+
+      // Store the data in localStorage for the direct checkout page to use
+      localStorage.setItem("buyNowData", JSON.stringify(buyNowData));
+
+      // Simulate network delay for better UX (remove in production)
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      toast.success("Taking you to express checkout!");
+
+      // Redirect to direct checkout page
+      window.location.href = `/direct-checkout/${productId}`;
+    } catch (error) {
+      console.error("Buy now error:", error);
+      toast.error("Something went wrong. Please try again.");
+      setBuyingNow(false);
+    }
   };
 
   const toggleWishlist = () => {
@@ -578,14 +615,24 @@ const ProductPage = () => {
             <div className="space-y-3">
               <button
                 onClick={handleBuyNow}
-                disabled={(product?.totalStock || 0) <= 0}
-                className={`w-full ${
+                disabled={(product?.totalStock || 0) <= 0 || buyingNow}
+                className={`w-full flex items-center justify-center gap-2 ${
                   (product?.totalStock || 0) > 0
                     ? "bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white"
                     : "bg-gray-300 text-gray-600 cursor-not-allowed"
-                } py-4 rounded-xl font-semibold text-lg transition-all duration-200 transform hover:scale-105 shadow-lg`}
+                } py-4 rounded-xl font-semibold text-lg transition-all duration-200 transform hover:scale-105 shadow-lg relative overflow-hidden group`}
               >
-                {(product?.totalStock || 0) > 0 ? "Buy Now" : "Out of Stock"}
+                <div className="absolute inset-0 w-full h-full bg-white/20 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                {buyingNow ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                ) : (
+                  <CreditCard className="h-5 w-5" />
+                )}
+                {buyingNow
+                  ? "Processing..."
+                  : (product?.totalStock || 0) > 0
+                  ? "Buy Now"
+                  : "Out of Stock"}
               </button>
 
               <div className="grid grid-cols-4 gap-3">

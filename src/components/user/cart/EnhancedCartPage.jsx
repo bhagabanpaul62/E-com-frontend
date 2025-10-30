@@ -41,7 +41,7 @@ export default function EnhancedCartPage() {
 
   // Estimated delivery date
   const standardDelivery = new Date();
-  standardDelivery.setDate(standardDelivery.getDate() + 5);
+  standardDelivery.setDate(standardDelivery.getDate() + 7);
 
   useEffect(() => {
     // Fetch cart data when component mounts or user changes
@@ -118,29 +118,66 @@ export default function EnhancedCartPage() {
     }
   };
 
-  const calculateTotal = () => {
-    let total = totalPrice;
+  // State to hold order totals from the backend
+  const [totals, setTotals] = useState({
+    subtotal: totalPrice,
+    shipping: 0,
+    total: totalPrice,
+  });
 
-    // Add shipping cost based on order value
-    if (totalPrice < 2000) {
-      total += 100; // Standard shipping fee
+  // Fetch order totals from the backend
+  const fetchOrderTotals = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token || !user) return;
+
+      const response = await fetch(
+        `${
+          process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_SERVER
+        }/api/orders/calculate-totals`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setTotals(data.data);
+      } else {
+        console.error("Failed to fetch order totals");
+        // Fallback to local calculation if API fails
+        setTotals({
+          subtotal: totalPrice,
+          shipping: 0,
+          total: totalPrice,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching order totals:", error);
+      // Fallback to local calculation if API fails
+      setTotals({
+        subtotal: totalPrice,
+        shipping: 0,
+        total: totalPrice,
+      });
     }
-    // Free shipping for orders ₹2000 and above
-
-    // Add tax (GST: 18%)
-  
-
-    return {
-      subtotal: totalPrice,
-      shipping: totalPrice < 2000 ? 100 : 0,
-      
-      total: total,
-    };
   };
 
-  const totals = calculateTotal();
-
-  // Mock recommended products based on cart items
+  // Fetch totals when component mounts or when cart items change
+  useEffect(() => {
+    if (user && items.length > 0) {
+      fetchOrderTotals();
+    } else {
+      // If no user or empty cart, use local calculation
+      setTotals({
+        subtotal: totalPrice,
+        shipping: 0,
+        total: totalPrice,
+      });
+    }
+  }, [totalPrice, items, user]); // Mock recommended products based on cart items
   const recommendedProducts = [
     {
       id: "rec1",
@@ -199,7 +236,7 @@ export default function EnhancedCartPage() {
           <div className="mx-auto w-24 h-24 mb-6">
             <ShoppingBag className="w-full h-full text-gray-300" />
           </div>
-          <h2 className="text-2xl font-bold mb-4">Your Amazon Cart is empty</h2>
+          <h2 className="text-2xl font-bold mb-4">Your Tajbee Cart is empty</h2>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
             Your shopping cart lives to serve. Give it purpose — fill it with
             groceries, clothing, household supplies, electronics, and more.
@@ -479,8 +516,7 @@ export default function EnhancedCartPage() {
                     <div className="flex items-start mb-2">
                       <Check className="text-green-600 w-5 h-5 mr-2 flex-shrink-0 mt-1" />
                       <p className="text-sm">
-                        Your order qualifies for FREE Shipping by choosing
-                        Standard delivery at checkout.
+                        Your order comes with FREE Shipping on all orders!
                       </p>
                     </div>
                   )}
@@ -496,14 +532,8 @@ export default function EnhancedCartPage() {
 
                   <div className="flex justify-between">
                     <span>Shipping & handling:</span>
-                    <span>
-                      {totals.shipping > 0
-                        ? `₹${totals.shipping.toFixed(0)}`
-                        : "FREE"}
-                    </span>
+                    <span>FREE</span>
                   </div>
-
-                  
                 </div>
 
                 <div className="border-t border-b py-2 mb-4">
@@ -533,9 +563,7 @@ export default function EnhancedCartPage() {
                               day: "numeric",
                             })}
                           </p>
-                          <p className="text-xs text-gray-700">
-                            {totalPrice >= 2000 ? "FREE" : "₹100"}
-                          </p>
+                          <p className="text-xs text-gray-700">{"FREE"}</p>
                         </div>
                       </div>
                     </div>

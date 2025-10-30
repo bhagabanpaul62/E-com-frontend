@@ -44,7 +44,7 @@ const ProductColumn = ({
           return (
             <Link
               key={product._id}
-              href={`/product/${product.slug || product._id}`}
+              href={`/product/${product._id}`}
               className="flex items-center gap-3 group cursor-pointer"
             >
               <div className="w-16 h-16 bg-gray-50 rounded flex items-center justify-center flex-shrink-0">

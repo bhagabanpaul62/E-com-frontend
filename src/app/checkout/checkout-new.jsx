@@ -90,19 +90,48 @@ export default function CheckoutPage() {
     }
   };
 
-  const calculateTotal = () => {
-    const subTotal = totalPrice;
-    const shippingCharges = subTotal < 500 ? 40 : 0;
-    const total = subTotal + shippingCharges;
+  // State to hold order totals from the backend
+  const [totals, setTotals] = useState({
+    subtotal: 0,
+    shipping: 0,
+    total: 0,
+  });
 
-    return {
-      subtotal: subTotal,
-      shipping: shippingCharges,
-      total: total,
-    };
+  // Fetch order totals from the backend
+  const fetchOrderTotals = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/calculate-totals`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setTotals(data.data);
+      } else {
+        console.error("Failed to fetch order totals");
+      }
+    } catch (error) {
+      console.error("Error fetching order totals:", error);
+    }
   };
 
-  const totals = calculateTotal();
+  // Fetch totals when component mounts or when cart changes
+  useEffect(() => {
+    if (user) {
+      fetchOrderTotals();
+    }
+  }, [items, user]);
 
   const handleAddressSubmit = async (e) => {
     e.preventDefault();
@@ -248,7 +277,7 @@ export default function CheckoutPage() {
           return;
         }
 
-        // Create Razorpay order
+        // Create Razorpay order (backend will calculate the amount)
         const razorpayOrderResponse = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/orders/create-razorpay-order`,
           {
@@ -258,7 +287,6 @@ export default function CheckoutPage() {
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-              amount: totals.total,
               currency: "INR",
             }),
           }
@@ -274,8 +302,8 @@ export default function CheckoutPage() {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: razorpayOrderData.data.amount,
           currency: razorpayOrderData.data.currency,
-          name: "Your Store",
-          description: "Order Payment",
+          name: "Tajbee",
+          description: "Tajbee Order Payment",
           order_id: razorpayOrderData.data.id,
           handler: async function (response) {
             // Create order after successful payment
@@ -686,7 +714,7 @@ export default function CheckoutPage() {
                   Credit/Debit Card
                 </p>
                 <p className="text-xs text-gray-500">
-                  Secure payment via Razorpay
+                  Secure payment via Tajbee Payment Gateway
                 </p>
               </div>
             </div>
@@ -811,9 +839,7 @@ export default function CheckoutPage() {
 
           <div className="flex justify-between">
             <span>Shipping & handling:</span>
-            <span>
-              {totals.shipping > 0 ? `₹${totals.shipping.toFixed(2)}` : "FREE"}
-            </span>
+            <span>FREE</span>
           </div>
         </div>
 

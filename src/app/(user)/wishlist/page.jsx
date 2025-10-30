@@ -121,7 +121,7 @@ const WishlistPage = () => {
                 inStock: product.totalStock > 0,
                 stockCount: product.totalStock || 0,
                 description: product.description || "",
-                slug: product.slug || product._id, // Add slug for navigation
+                slug: product._id, // Use _id for navigation
                 status: product.status || "active",
               },
               addedAt: product.createdAt || new Date().toISOString(),
@@ -622,11 +622,7 @@ const WishlistPage = () => {
                   <div className="relative">
                     {/* Image Section */}
                     <div className="relative aspect-square overflow-hidden">
-                      <Link
-                        href={`/product/${
-                          item.productId.slug || item.productId._id
-                        }`}
-                      >
+                      <Link href={`/product/${item.productId._id}`}>
                         <img
                           src={
                             process.env.NEXT_PUBLIC_SERVER &&
@@ -699,11 +695,7 @@ const WishlistPage = () => {
                         <button className="p-2 bg-white text-gray-600 rounded-full shadow-lg hover:bg-gray-100 transition-colors">
                           <Share2 className="h-4 w-4" />
                         </button>
-                        <Link
-                          href={`/product/${
-                            item.productId.slug || item.productId._id
-                          }`}
-                        >
+                        <Link href={`/product/${item.productId._id}`}>
                           <button className="p-2 bg-white text-gray-600 rounded-full shadow-lg hover:bg-gray-100 transition-colors">
                             <Eye className="h-4 w-4" />
                           </button>
@@ -714,11 +706,7 @@ const WishlistPage = () => {
                     {/* Content Section */}
                     <div className="p-4">
                       <div className="mb-2">
-                        <Link
-                          href={`/product/${
-                            item.productId.slug || item.productId._id
-                          }`}
-                        >
+                        <Link href={`/product/${item.productId._id}`}>
                           <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-amber-600 transition-colors">
                             {item.productId.name}
                           </h3>
@@ -834,11 +822,7 @@ const WishlistPage = () => {
                             onClick={(e) => {
                               e.preventDefault();
                               try {
-                                const productUrl = `${
-                                  window.location.origin
-                                }/product/${
-                                  item.productId.slug || item.productId._id
-                                }`;
+                                const productUrl = `${window.location.origin}/product/${item.productId._id}`;
                                 if (navigator.share) {
                                   navigator
                                     .share({
@@ -886,11 +870,7 @@ const WishlistPage = () => {
 
                       {/* Image */}
                       <div className="relative">
-                        <Link
-                          href={`/product/${
-                            item.productId.slug || item.productId._id
-                          }`}
-                        >
+                        <Link href={`/product/${item.productId._id}`}>
                           <img
                             src={
                               process.env.NEXT_PUBLIC_SERVER &&
@@ -942,11 +922,7 @@ const WishlistPage = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <Link
-                              href={`/product/${
-                                item.productId.slug || item.productId._id
-                              }`}
-                            >
+                            <Link href={`/product/${item.productId._id}`}>
                               <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1 hover:text-amber-600 transition-colors">
                                 {item.productId.name}
                               </h3>
@@ -1078,11 +1054,7 @@ const WishlistPage = () => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 try {
-                                  const productUrl = `${
-                                    window.location.origin
-                                  }/product/${
-                                    item.productId.slug || item.productId._id
-                                  }`;
+                                  const productUrl = `${window.location.origin}/product/${item.productId._id}`;
                                   if (navigator.share) {
                                     navigator
                                       .share({
