@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { resetCart } from "@/redux/features/cart/cartSlice";
@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
-export default function OrderConfirmationPage() {
+function OrderConfirmationContent() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
@@ -437,7 +437,7 @@ export default function OrderConfirmationPage() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/(user)/order">
-            <Link href="/order"  className="flex items-center">
+            <Link href="/order" className="flex items-center">
               <Package className="mr-2 w-4 h-4" />
               View All Orders
             </Link>
@@ -451,5 +451,24 @@ export default function OrderConfirmationPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-amber-600 mx-auto"></div>
+            <p className="mt-4 text-lg font-medium text-gray-600">
+              Loading order details...
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <OrderConfirmationContent />
+    </Suspense>
   );
 }
